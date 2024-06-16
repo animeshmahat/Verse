@@ -91,8 +91,8 @@
                                         <a href="{{ route('admin.users.view', ['id' => $row->id]) }}" class="btn-circle btn-info m-1"><i class="fa-regular fa-eye"></i></a>
                                         @if($row->role == 'user')
                                         <a href="{{ route('admin.users.edit', ['id' => $row->id]) }}" class="btn-circle btn-warning m-1"><i class="fa-regular fa-pen-to-square"></i></a>
-                                        @endif
                                         <a href="{{ route('admin.users.delete', ['id' => $row->id]) }}" class="btn-circle btn-danger m-1" onclick="return confirm('Delete user permanently?')"><i class="fa fa-trash"></i></a>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>

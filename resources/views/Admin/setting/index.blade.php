@@ -8,6 +8,7 @@
         width: 100px;
         height: 100px;
         object-fit: contain;
+        background-color: red;
     }
 
     a.fb {

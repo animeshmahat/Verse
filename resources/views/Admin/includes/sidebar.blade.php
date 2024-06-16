@@ -4,9 +4,11 @@
     <!-- Sidebar - Brand -->
     <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{{route('admin.index')}}">
         <div class="sidebar-brand-icon rotate-n-75">
-            <i class="fas fa-pencil"></i>
+            <i class="fas fa-feather"></i>
         </div>
-        <div class="sidebar-brand-text mx-3">Verse</div>
+        <div class="sidebar-brand-text mx-3" style="font-family:'Times New Roman', Times, serif">
+            <h2>Verse</h2>
+        </div>
     </a>
 
     <!-- Divider -->
@@ -67,5 +69,13 @@
             <span>Settings</span>
         </a>
     </li>
+
+    <!-- Divider -->
+    <hr class="sidebar-divider d-none d-md-block">
+
+    <!-- Sidebar Toggler (Sidebar) -->
+    <div class="text-center d-none d-md-inline">
+        <button class="rounded-circle border-0" id="sidebarToggle"></button>
+    </div>
 </ul>
 <!-- End of Sidebar -->

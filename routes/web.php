@@ -14,10 +14,6 @@ use Illuminate\Support\Facades\Auth;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
-
 Auth::routes();
 
 Route::get('/home',                             [App\Http\Controllers\HomeController::class, 'index'])->name('home');
@@ -84,5 +80,20 @@ Route::group(['prefix' => '/admin',             'as' => 'admin.', 'middleware' =
         Route::get('/edit/{id}',                [App\Http\Controllers\Admin\UserController::class, 'edit'])->name('edit');
         Route::put('/update/{id}',              [App\Http\Controllers\Admin\UserController::class, 'update'])->name('update');
         Route::get('/delete/{id}',              [App\Http\Controllers\Admin\UserController::class, 'delete'])->name('delete');
+    });
+});
+
+
+//Site routes
+Route::group(['as' => 'site.',                  'namespace' => 'Site'], function () {
+    Route::get('/',                             [App\Http\Controllers\Site\SiteController::class, 'index'])->name('index');
+    Route::get('/search',                       [App\Http\Controllers\Site\SiteController::class, 'search'])->name('search');
+    Route::get('/autocomplete',                 [App\Http\Controllers\Site\SiteController::class, 'autocomplete'])->name('autocomplete');
+    Route::get('/post/{slug}',                  [App\Http\Controllers\Site\SiteController::class, 'single_post'])->name('single_post');
+    Route::get('/category/{name}',              [App\Http\Controllers\Site\SiteController::class, 'category'])->name('category');
+
+    // Protect comment routes with auth middleware
+    Route::middleware(['auth'])->group(function () {
+        Route::post('/post/{post_id}/comment', [App\Http\Controllers\Admin\CommentController::class, 'store'])->name('comment.store');
     });
 });

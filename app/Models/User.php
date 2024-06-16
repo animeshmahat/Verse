@@ -49,7 +49,35 @@ class User extends Authenticatable
     {
         return DB::table('posts')->get();
     }
+    public function followers()
+    {
+        return $this->belongsToMany(User::class, 'followers', 'user_id', 'follower_id');
+    }
 
+    public function followings()
+    {
+        return $this->belongsToMany(User::class, 'followers', 'follower_id', 'user_id');
+    }
+
+    public function follow($userId)
+    {
+        $this->followings()->attach($userId);
+    }
+
+    public function unfollow($userId)
+    {
+        $this->followings()->detach($userId);
+    }
+
+    public function isFollowing($userId)
+    {
+        return $this->followings()->where('user_id', $userId)->exists();
+    }
+
+    public function isFollowedBy($userId)
+    {
+        return $this->followers()->where('follower_id', $userId)->exists();
+    }
     /**
      * The attributes that should be hidden for serialization.
      *
