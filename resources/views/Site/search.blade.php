@@ -22,7 +22,11 @@
                     <div>
                         <div class="post-meta"><span class="date">{{$row->category->name}}</span> <span class="mx-1">&bullet;</span> <span>{{$row->created_at->format('M d-Y')}}</span></div>
                         <h3><a href="{{route('site.single_post', $row->slug)}}">{{$row->title}}</a></h3>
-                        <p>{!! substr(html_entity_decode($row->description), 0, 100) !!}...</p>
+                        <p>{!! substr(html_entity_decode($row->description), 0, 50) !!}...</p>
+                        <div>
+                            <span><i class="fa fa-thumbs-up"></i> {{$row->likes_count}}</span>
+                            <span><i class="fa fa-comment"></i> {{$row->comments_count}}</span>
+                        </div>
                         <div class="d-flex align-items-center author">
                             @if(isset($row->user->image))
                             <div class="photo"><img src="{{asset('/uploads/user_image/' . $row->user->image)}}" alt="" class="img-fluid"></div>

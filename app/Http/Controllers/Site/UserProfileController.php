@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Site;
 
 use App\Http\Controllers\Admin\BaseController;
 use App\Models\User;
@@ -10,8 +10,8 @@ use Illuminate\Support\Facades\Hash;
 
 class UserProfileController extends BaseController
 {
-    protected $base_route = "admin.index";
-    protected $view_path = "admin.profile";
+    protected $base_route = "site.index";
+    protected $view_path = "site";
     protected $panel = "Profile";
     protected $model;
 

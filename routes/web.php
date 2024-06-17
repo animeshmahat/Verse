@@ -57,9 +57,9 @@ Route::group(['prefix' => '/admin',             'as' => 'admin.', 'middleware' =
     });
     //User Profile
     Route::group(['prefix' => 'profile',        'as' => 'profile.'], function () {
-        Route::get('/edit/{id}',                [App\Http\Controllers\Admin\UserProfileController::class, 'edit'])->name('edit');
-        Route::put('/update/{id}',              [App\Http\Controllers\Admin\UserProfileController::class, 'update'])->name('update');
-        Route::put('passwordChange/{id}',       [App\Http\Controllers\Admin\UserProfileController::class, 'passwordChange'])->name('passwordChange');
+        Route::get('/edit',                [App\Http\Controllers\Admin\UserProfileController::class, 'edit'])->name('edit');
+        Route::put('/update',              [App\Http\Controllers\Admin\UserProfileController::class, 'update'])->name('update');
+        Route::put('passwordChange',       [App\Http\Controllers\Admin\UserProfileController::class, 'passwordChange'])->name('passwordChange');
     });
     //Settings routes
     Route::group(['prefix' => 'setting',        'as' => 'setting.'], function () {
@@ -83,7 +83,6 @@ Route::group(['prefix' => '/admin',             'as' => 'admin.', 'middleware' =
     });
 });
 
-
 //Site routes
 Route::group(['as' => 'site.',                  'namespace' => 'Site'], function () {
     Route::get('/',                             [App\Http\Controllers\Site\SiteController::class, 'index'])->name('index');
@@ -94,9 +93,13 @@ Route::group(['as' => 'site.',                  'namespace' => 'Site'], function
 
     // Protect comment routes with auth middleware
     Route::middleware(['auth'])->group(function () {
-        Route::post('/post/{post_id}/comment', [App\Http\Controllers\Admin\CommentController::class, 'store'])->name('comment.store');
-        Route::delete('/comment/{id}', [App\Http\Controllers\Admin\CommentController::class, 'destroy'])->name('comment.destroy');
-        Route::post('post/{postId}/like', [App\Http\Controllers\Site\SiteController::class, 'likePost'])->name('post.like');
-        Route::post('post/{postId}/unlike', [App\Http\Controllers\Site\SiteController::class, 'unlikePost'])->name('post.unlike');
+        Route::post('/post/{post_id}/comment',  [App\Http\Controllers\Admin\CommentController::class, 'store'])->name('comment.store');
+        Route::delete('/comment/{id}',          [App\Http\Controllers\Admin\CommentController::class, 'destroy'])->name('comment.destroy');
+        Route::post('post/{postId}/like',       [App\Http\Controllers\Site\SiteController::class, 'likePost'])->name('post.like');
+        Route::post('post/{postId}/unlike',     [App\Http\Controllers\Site\SiteController::class, 'unlikePost'])->name('post.unlike');
+        Route::get('/profile/{id}',             [App\Http\Controllers\Site\SiteController::class, 'profile'])->name('profile');
+        Route::get('/edit',                [App\Http\Controllers\Site\UserProfileController::class, 'edit'])->name('edit');
+        Route::put('/update',              [App\Http\Controllers\Site\UserProfileController::class, 'update'])->name('update');
+        Route::put('passwordChange',       [App\Http\Controllers\Site\UserProfileController::class, 'passwordChange'])->name('passwordChange');
     });
 });

@@ -2,11 +2,6 @@
 @section('title', 'Blog')
 @section('css')
 <style>
-    .img-fluid {
-        max-width: 50vw;
-        object-fit: contain;
-    }
-
     .tab {
         overflow: hidden;
         border-bottom: 1px solid #ccc;
@@ -42,7 +37,7 @@
 <section class="single-post-content">
     <div class="container">
         <div class="row">
-            <div class="col-md-9 post-content" data-aos="fade-up">
+            <div class="col-md-9 post-content">
                 <div class="single-post">
                     <div class="post-meta">
                         <span class="date">{{ $data['post']->category->name }}</span>
@@ -53,8 +48,6 @@
                     <div class="post-meta">
                         <i class="fa fa-eye"></i>
                         <span>{{ $data['post']->views }} views,</span>
-                        <i class="thumbs-up"></i>
-                        <span>{{ $data['post']->likes_count }} likes</span>
                     </div>
                     @if($data['post']->created_at != $data['post']->updated_at)
                     <span style="font-weight: italic;">Updated at : {{ $data['post']->updated_at->format('D Y-m-d') }} at {{ $data['post']->updated_at->format('H:i A') }}</span>
@@ -68,6 +61,7 @@
                     <div class="post-meta">Posted by {{ $data['post']->user->name }} ({{ $data['post']->user->username }})</div>
                 </div>
 
+                @auth
                 <button id="likeButton" class="btn btn-outline-primary btn-sm">
                     <i id="likeIcon" class="fa {{ $data['post']->hasLiked(Auth::user()->id) ? 'fa-thumbs-down' : 'fa-thumbs-up' }}"></i>
                     <span id="likeText">{{ $data['post']->hasLiked(Auth::user()->id) ? 'Unlike' : 'Like' }}</span>
@@ -85,10 +79,11 @@
                     document.getElementById('likeIcon').classList.replace('fa-thumbs-down', 'fa-thumbs-up');
                 </script>
                 @endif
+                @endauth
 
                 <!-- Comments -->
                 <div class="comments">
-                    <h5 class="comment-title py-4">{{ $data['post']->comments_count }} Comments</h5>
+                    <h5 class="comment-title py-4">{{$data['post']->likes_count}} Likes &amp; {{ $data['post']->comments_count }} Comments</h5>
                     <!-- Comment Display Section -->
                     @foreach($data['comments'] as $comment)
                     @if(!$comment->parent_id)
@@ -160,7 +155,7 @@
                                 </form>
                             </div>
                             @else
-                            <a href="{{ route('login') }}" class="btn btn-sm btn-primary">Login to reply</a>
+                            <a href="{{ route('login') }}" class="btn btn-sm btn-outline-danger">Login to reply</a>
                             @endauth
                         </div>
                     </div>
@@ -190,7 +185,7 @@
                     </div>
                 </div>
                 @else
-                <a href="{{ route('login') }}" class="btn btn-sm btn-primary">Login to leave a comment</a>
+                <a href="{{ route('login') }}" class="btn btn-sm btn-outline-danger">Login to leave a comment</a>
                 @endauth
             </div>
             @include('site.includes.sidebar')
@@ -199,6 +194,7 @@
 </section>
 
 <script>
+    @if(Auth::check())
     document.getElementById('likeButton').addEventListener('click', function() {
         const postId = "{{ $data['post']->id }}";
         const isLiked = "{{ $data['post']->hasLiked(Auth::user()->id) }}";
@@ -221,6 +217,7 @@
             })
             .catch(error => console.error('Error:', error));
     });
+    @endif
 
     document.querySelectorAll('.reply-link').forEach(link => {
         link.addEventListener('click', function() {

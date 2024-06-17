@@ -237,4 +237,12 @@ class SiteController extends BaseController
 
         return response()->json(['message' => 'Post unliked'], 200);
     }
+    public function profile($id)
+    {
+        $data['row'] = User::findOrFail($id);
+        $data['post'] = Posts::where('status', 1)->where('user_id', $id)->paginate('10');
+        Paginator::useBootstrap();
+
+        return view(parent::loadDefaultDataToView($this->view_path . '.profile'), compact('data'));
+    }
 }

@@ -33,7 +33,7 @@
                      @if(Auth::user()->role == 'superadmin')
                      <li><a href="{{ route('admin.index') }}">Dashboard</a></li>
                      @else
-                     <li><a href="{{ route('site.index') }}">Profile</a></li>
+                     <li><a href="{{route('site.profile' , ['id' => Auth::user()->id])}}">Profile</a></li>
                      @endif
                      <li>
                          <a href="{{ route('logout') }}" onclick="event.preventDefault(); if(confirm('Are you sure you want to logout?')) { document.getElementById('logout-form').submit(); }">

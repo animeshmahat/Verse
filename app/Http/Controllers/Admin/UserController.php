@@ -114,7 +114,7 @@ class UserController extends BaseController
     public function edit(Request $request, $id)
     {
         $data = [];
-        $data['row'] = $this->model->where('role', 'user')->findorFail($id);
+        $data['row'] = $this->model->findorFail($id);
         return view(parent::loadDefaultDataToView($this->view_path . '.edit'), compact('data'));
     }
 
