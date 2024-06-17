@@ -58,7 +58,11 @@ class Posts extends Model
     }
     public function likes()
     {
-        return $this->hasMany(Likes::class);
+        return $this->hasMany(Likes::class, 'post_id');
+    }
+    public function hasLiked($userId)
+    {
+        return $this->likes()->where('user_id', $userId)->exists();
     }
     public function tags()
     {

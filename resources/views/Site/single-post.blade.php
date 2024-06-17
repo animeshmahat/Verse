@@ -1,5 +1,5 @@
 @extends('site.layouts.app')
-@section('title', 'Forge')
+@section('title', 'Blog')
 @section('css')
 <style>
     .img-fluid {
@@ -52,7 +52,9 @@
                     </div>
                     <div class="post-meta">
                         <i class="fa fa-eye"></i>
-                        <span>{{ $data['post']->views }} views</span>
+                        <span>{{ $data['post']->views }} views,</span>
+                        <i class="thumbs-up"></i>
+                        <span>{{ $data['post']->likes_count }} likes</span>
                     </div>
                     @if($data['post']->created_at != $data['post']->updated_at)
                     <span style="font-weight: italic;">Updated at : {{ $data['post']->updated_at->format('D Y-m-d') }} at {{ $data['post']->updated_at->format('H:i A') }}</span>
@@ -66,17 +68,38 @@
                     <div class="post-meta">Posted by {{ $data['post']->user->name }} ({{ $data['post']->user->username }})</div>
                 </div>
 
-                <div class="btn btn-outline-primary btn-sm"><i class="fa fa-thumbs-up"></i> Like</div>
+                <button id="likeButton" class="btn btn-outline-primary btn-sm">
+                    <i id="likeIcon" class="fa {{ $data['post']->hasLiked(Auth::user()->id) ? 'fa-thumbs-down' : 'fa-thumbs-up' }}"></i>
+                    <span id="likeText">{{ $data['post']->hasLiked(Auth::user()->id) ? 'Unlike' : 'Like' }}</span>
+                </button>
+                @if(session('success'))
+                <script>
+                    document.getElementById('likeText').innerText = 'Unlike';
+                    document.getElementById('likeIcon').classList.replace('fa-thumbs-up', 'fa-thumbs-down');
+                </script>
+                @endif
+
+                @if(session('error'))
+                <script>
+                    document.getElementById('likeText').innerText = 'Like';
+                    document.getElementById('likeIcon').classList.replace('fa-thumbs-down', 'fa-thumbs-up');
+                </script>
+                @endif
 
                 <!-- Comments -->
                 <div class="comments">
-                    <h5 class="comment-title py-4">{{ $data['comments']->count() }} Comments</h5>
+                    <h5 class="comment-title py-4">{{ $data['post']->comments_count }} Comments</h5>
+                    <!-- Comment Display Section -->
                     @foreach($data['comments'] as $comment)
                     @if(!$comment->parent_id)
                     <div class="comment d-flex mb-4">
                         <div class="flex-shrink-0">
                             <div class="avatar avatar-sm rounded-circle">
-                                <img class="avatar-img" src="{{ asset('assets/Site/usericon.jpg') }}" alt="" class="img-fluid">
+                                @if($comment->user->image)
+                                <img class="avatar-img" src="{{asset('uploads/user_image/' . $comment->user->image) }}" alt="" class="img-fluid">
+                                @else
+                                <img class="avatar-img" src="{{ asset('assets/Site/usericon.png') }}" alt="" class="img-fluid">
+                                @endif
                             </div>
                         </div>
                         <div class="flex-grow-1 ms-2 ms-sm-3">
@@ -95,7 +118,11 @@
                                 <div class="reply d-flex mb-4">
                                     <div class="flex-shrink-0">
                                         <div class="avatar avatar-sm rounded-circle">
-                                            <img class="avatar-img" src="{{ asset('assets/Site/usericon.jpg') }}" alt="" class="img-fluid">
+                                            @if($comment->user->image)
+                                            <img class="avatar-img" src="{{asset('uploads/user_image/' . $comment->user->image) }}" alt="" class="img-fluid">
+                                            @else
+                                            <img class="avatar-img" src="{{ asset('assets/Site/usericon.png') }}" alt="" class="img-fluid">
+                                            @endif
                                         </div>
                                     </div>
                                     <div class="flex-grow-1 ms-2 ms-sm-3">
@@ -111,17 +138,23 @@
                                 @endforeach
                             </div>
                             @endif
-
                             @auth
-                            <a href="javascript:void(0);" class="reply-link" data-comment-id="{{ $comment->id }}" style="color:red;">Reply</a>
+                            <a href="javascript:void(0);" class="reply-link" data-comment-id="{{ $comment->id }}" style="color:blue;"><i class="fa-solid fa-reply"></i> Reply</a>
+                            @if($comment->user_id == Auth::id())
+                            <form action="{{ route('site.comment.destroy', ['id' => $comment->id]) }}" method="POST" style="display:inline;">
+                                @csrf
+                                @method('DELETE')
+                                <button type="button" class="btn btn-outline-danger btn-rounded-circle btn-sm delete-comment-btn"><i class="fa-solid fa-trash"></i> Delete</button>
+                            </form>
+                            @endif
                             <div class="reply-form" id="reply-form-{{ $comment->id }}" style="display:none;">
-                                <form action="{{ route('site.comment.store', ['post_id' => $data['post']->id]) }}" method="POST">
+                                <form action="{{ route('site.comment.destroy', ['id' => $comment->id]) }}" method="POST" style="display:inline;">
                                     @csrf
                                     <input type="hidden" name="post_id" value="{{ $data['post']->id }}">
                                     <input type="hidden" name="parent_id" value="{{ $comment->id }}">
                                     <div class="mb-3">
-                                        <label for="comment-{{ $comment->id }}" class="form-label">comment</label>
-                                        <textarea class="form-control" id="comment-{{ $comment->id }}" name="comment" rows="3" placeholder="Enter Your comment" required></textarea>
+                                        <label for="comment-{{ $comment->id }}" class="form-label" style="font-weight: bold;">Reply:</label>
+                                        <textarea class="form-control" id="comment-{{ $comment->id }}" name="comment" rows="3" placeholder="Enter Your Comment" required></textarea>
                                     </div>
                                     <button type="submit" class="btn btn-primary">Submit</button>
                                 </form>
@@ -144,21 +177,11 @@
                             <input type="hidden" name="post_id" value="{{ $data['post']->id }}">
                             <div class="row">
                                 <div class="col-12 mb-3">
-                                    <label for="comment" class="form-label">comment</label>
                                     <textarea class="form-control" id="comment" name="comment" placeholder="Enter your comment" cols="10" rows="10"></textarea>
                                     @error('comment')
-                                    <p class="alert alert-danger">{{ $comment }}</p>
+                                    <p class="text-danger">{{ $message }}</p>
                                     @enderror
                                 </div>
-                                @if ($errors->any())
-                                <div class="alert alert-danger">
-                                    <ul>
-                                        @foreach ($errors->all() as $error)
-                                        <li>{{ $error }}</li>
-                                        @endforeach
-                                    </ul>
-                                </div>
-                                @endif
                                 <div class="col-12">
                                     <input type="submit" class="btn btn-primary" value="Post comment">
                                 </div>
@@ -167,31 +190,56 @@
                     </div>
                 </div>
                 @else
-                <p class="mt-5">Please <a href="{{ route('login') }}">login</a> to leave a comment.</p>
+                <a href="{{ route('login') }}" class="btn btn-sm btn-primary">Login to leave a comment</a>
                 @endauth
-
             </div>
             @include('site.includes.sidebar')
         </div>
     </div>
 </section>
 
-@endsection
-
-@section('js')
-<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 <script>
-    $(document).ready(function() {
-        $('#summarizeBtn').click(function() {
-            $('#summarizeModal').modal('show');
-        });
+    document.getElementById('likeButton').addEventListener('click', function() {
+        const postId = "{{ $data['post']->id }}";
+        const isLiked = "{{ $data['post']->hasLiked(Auth::user()->id) }}";
+        const url = isLiked ? `/post/${postId}/unlike` : `/post/${postId}/like`;
 
-        $('.reply-link').click(function() {
-            var commentId = $(this).data('comment-id');
-            $('#reply-form-' + commentId).toggle();
-        });
+        fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message === 'Post liked' || data.message === 'Post unliked') {
+                    location.reload(); // Refresh the page
+                } else {
+                    console.error(data.message);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    });
 
-        document.getElementById("defaultOpen").click();
+    document.querySelectorAll('.reply-link').forEach(link => {
+        link.addEventListener('click', function() {
+            const commentId = this.dataset.commentId;
+            const replyForm = document.getElementById(`reply-form-${commentId}`);
+            if (replyForm) {
+                replyForm.style.display = replyForm.style.display === 'none' ? 'block' : 'none';
+            }
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.delete-comment-btn').forEach(function(button) {
+            button.addEventListener('click', function() {
+                if (confirm('Are you sure you want to delete this comment?')) {
+                    button.closest('form').submit();
+                }
+            });
+        });
     });
 </script>
 @endsection

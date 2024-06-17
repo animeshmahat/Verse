@@ -9,13 +9,13 @@
 
          <nav id="navbar" class="navbar">
              <ul>
-                 <li><a href="{{route('site.index')}}">Home</a></li>
+                 <li><a href="{{ route('site.index') }}">Home</a></li>
                  <li><a href="#">Contact Us</a></li>
                  <li class="dropdown"><a href="#"><span>Categories</span> <i class="bi bi-chevron-down dropdown-indicator"></i></a>
                      <ul>
                          @if(isset($all_view['category']) && $all_view['category']->isNotEmpty())
                          @foreach($all_view['category'] as $category)
-                         @if($loop->index<7) <li><a href="{{route('site.category', $category->name)}}">{{$category->name}}</a>
+                         @if($loop->index < 7) <li><a href="{{ route('site.category', $category->name) }}">{{ $category->name }}</a>
                  </li>
                  @endif
                  @endforeach
@@ -23,8 +23,29 @@
              </ul>
              </li>
              <li><a href="#">About</a></li>
-             <li><a href="{{route('login')}}">Login</a></li>
 
+             @guest
+             <li><a href="{{ route('login') }}">Login</a></li>
+             @else
+             <li class="dropdown">
+                 <a href="#"><span>{{ Auth::user()->name }}</span> <i class="bi bi-chevron-down dropdown-indicator"></i></a>
+                 <ul>
+                     @if(Auth::user()->role == 'superadmin')
+                     <li><a href="{{ route('admin.index') }}">Dashboard</a></li>
+                     @else
+                     <li><a href="{{ route('site.index') }}">Profile</a></li>
+                     @endif
+                     <li>
+                         <a href="{{ route('logout') }}" onclick="event.preventDefault(); if(confirm('Are you sure you want to logout?')) { document.getElementById('logout-form').submit(); }">
+                             Logout
+                         </a>
+                         <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                             @csrf
+                         </form>
+                     </li>
+                 </ul>
+             </li>
+             @endguest
              </ul>
          </nav><!-- .navbar -->
 

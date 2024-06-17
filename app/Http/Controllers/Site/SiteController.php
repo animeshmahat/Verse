@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Site;
 use App\Http\Controllers\Admin\BaseController;
 use App\Models\Category;
 use App\Models\Comments;
+use App\Models\Likes;
 use App\Models\Posts;
 use App\Models\PostView;
 use App\Models\Tags;
@@ -101,8 +102,14 @@ class SiteController extends BaseController
     {
         $post = Posts::where('slug', $slug)->firstOrFail();
 
-        // Increment the views count
-        $post->increment('views');
+        // Check if the user has viewed this post in this session
+        $viewedPosts = session()->get('viewed_posts', []);
+        if (!in_array($post->id, $viewedPosts)) {
+            // Increment the views count if not viewed in this session
+            $post->increment('views');
+            // Store the post ID in the session to mark it as viewed
+            session()->push('viewed_posts', $post->id);
+        }
 
         // Store the datetime of the view
         PostView::create([
@@ -112,7 +119,6 @@ class SiteController extends BaseController
 
         $post_id = $post->id;
         $comments = Comments::where('post_id', $post_id)->get();
-
 
         // Sidebar info 
         $categories = Category::get();
@@ -137,7 +143,7 @@ class SiteController extends BaseController
             'tagsWithMostPosts' => $tagsWithMostPosts,
             'popularPosts' => $popularPosts,
             'trendingPosts' => $trendingPosts,
-            'readingTime' => $readingTime, // Pass reading time to the view
+            'readingTime' => $readingTime,
         ];
 
         return view(parent::loadDefaultDataToView($this->view_path . '.single-post'), compact('data'));
@@ -194,5 +200,41 @@ class SiteController extends BaseController
         }
 
         return response()->json(['message' => 'Failed to unfollow the user.'], 400);
+    }
+    public function likePost($id)
+    {
+        $post = Posts::findOrFail($id);
+        $user = Auth::user();
+
+        if ($post->likes()->where('user_id', $user->id)->exists()) {
+            return response()->json(['message' => 'Already liked'], 400);
+        }
+
+        $post->likes()->create([
+            'user_id' => $user->id,
+            'post_id' => $post->id,
+        ]);
+
+        $post->increment('likes_count');
+
+        return response()->json(['message' => 'Post liked'], 200);
+    }
+
+    public function unlikePost($id)
+    {
+        $post = Posts::findOrFail($id);
+        $user = Auth::user();
+
+        $like = $post->likes()->where('user_id', $user->id)->first();
+
+        if (!$like) {
+            return response()->json(['message' => 'Not liked yet'], 400);
+        }
+
+        $like->delete();
+
+        $post->decrement('likes_count');
+
+        return response()->json(['message' => 'Post unliked'], 200);
     }
 }
