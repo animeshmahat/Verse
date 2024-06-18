@@ -1,6 +1,7 @@
 @extends('site.layouts.app')
 @section('title', 'Blog')
 @section('css')
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 <style>
     .tab {
         overflow: hidden;
@@ -47,10 +48,10 @@
                     </div>
                     <div class="post-meta">
                         <i class="fa fa-eye"></i>
-                        <span>{{ $data['post']->views }} views,</span>
+                        <span>{{ $data['post']->views }} views</span>
                     </div>
                     @if($data['post']->created_at != $data['post']->updated_at)
-                    <span style="font-weight: italic;">Updated at : {{ $data['post']->updated_at->format('D Y-m-d') }} at {{ $data['post']->updated_at->format('H:i A') }}</span>
+                    <span style="font-weight: italic; color: gray;">Updated at : {{ $data['post']->updated_at->format('D Y-m-d') }} at {{ $data['post']->updated_at->format('H:i A') }}</span>
                     @endif
                     <h1 class="mb-5">{{ $data['post']->title }}</h1>
 
@@ -58,7 +59,7 @@
                         <img src="{{ asset('/uploads/post/' . $data['post']->thumbnail) }}" alt="" class="img-fluid">
                     </figure>
                     <p>{!! html_entity_decode($data['post']->description) !!}</p>
-                    <div class="post-meta">Posted by {{ $data['post']->user->name }} ({{ $data['post']->user->username }})</div>
+                    <div class="post-meta">Posted by <a href="{{route('site.profile' , $data['post']->user->id)}}">{{ $data['post']->user->name }} ({{ $data['post']->user->username }})</a></div>
                 </div>
 
                 @auth
@@ -192,7 +193,11 @@
         </div>
     </div>
 </section>
+@endsection
 
+@section('js')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <script>
     @if(Auth::check())
     document.getElementById('likeButton').addEventListener('click', function() {
@@ -209,13 +214,24 @@
             })
             .then(response => response.json())
             .then(data => {
-                if (data.message === 'Post liked' || data.message === 'Post unliked') {
-                    location.reload(); // Refresh the page
+                if (data.message === 'Post liked') {
+                    toastr.success('Post liked successfully');
+                    document.getElementById('likeText').innerText = 'Unlike';
+                    document.getElementById('likeIcon').classList.replace('fa-thumbs-up', 'fa-thumbs-down');
+                    location.reload();
+                } else if (data.message === 'Post unliked') {
+                    toastr.success('Post unliked successfully');
+                    document.getElementById('likeText').innerText = 'Like';
+                    document.getElementById('likeIcon').classList.replace('fa-thumbs-down', 'fa-thumbs-up');
+                    location.reload();
                 } else {
-                    console.error(data.message);
+                    toastr.error(data.message);
                 }
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => {
+                toastr.error('Something went wrong. Please try again.');
+                console.error('Error:', error);
+            });
     });
     @endif
 

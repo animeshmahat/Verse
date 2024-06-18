@@ -36,7 +36,7 @@
         @endif
         <a href="{{ route('admin.users.create') }}" class="btn btn-success btn-sm mb-2"><i class="fa fa-add"></i>Add User</a>
         @if(isset($data['row']))
-        <p class="text-center"><span class="btn btn-disabled btn-sm btn-outline-primary">Total Users: {{$data['row']->where('role', 'user')->count()}}</span>&nbsp;&nbsp;<span class="btn btn-disabled btn-sm btn-outline-danger">Total Admins: {{$data['row']->where('role', 'superadmin')->count()}}</span></p>
+        <p class="text-center"><span class="btn btn-disabled btn-sm btn-outline-primary">Total Users: {{$data['row']->where('role', '')->count()}}</span>&nbsp;&nbsp;<span class="btn btn-disabled btn-sm btn-outline-danger">Total Admins: {{$data['row']->where('role', 'superadmin')->count()}}</span></p>
         @endif
         <div class="card shadow mb-4">
             <div class="card-header">
@@ -44,7 +44,7 @@
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <table class="table table-striped" id="dataTable" width="100%" cellspacing="0">
                         <thead>
                             <tr>
                                 <th>S.N</th>
@@ -88,10 +88,10 @@
                                 </td>
                                 <td>
                                     <div class="d-flex flex-row">
-                                        <a href="{{ route('admin.users.view', ['id' => $row->id]) }}" class="btn-circle btn-info m-1"><i class="fa-regular fa-eye"></i></a>
+                                        <a href="{{ route('admin.users.view', ['id' => $row->id]) }}" class="btn-circle btn-sm btn-info m-1"><i class="fa-regular fa-eye"></i></a>
                                         @if($row->role != 'superadmin')
-                                        <a href="{{ route('admin.users.edit', ['id' => $row->id]) }}" class="btn-circle btn-warning m-1"><i class="fa-regular fa-pen-to-square"></i></a>
-                                        <a href="{{ route('admin.users.delete', ['id' => $row->id]) }}" class="btn-circle btn-danger m-1" onclick="return confirm('Delete user permanently?')"><i class="fa fa-trash"></i></a>
+                                        <a href="{{ route('admin.users.edit', ['id' => $row->id]) }}" class="btn-circle btn-sm btn-warning m-1"><i class="fa-regular fa-pen-to-square"></i></a>
+                                        <a href="{{ route('admin.users.delete', ['id' => $row->id]) }}" class="btn-circle btn-sm btn-danger m-1" onclick="return confirm('Delete user permanently?')"><i class="fa fa-trash"></i></a>
                                         @endif
                                     </div>
                                 </td>

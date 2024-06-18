@@ -57,9 +57,9 @@ Route::group(['prefix' => '/admin',             'as' => 'admin.', 'middleware' =
     });
     //User Profile
     Route::group(['prefix' => 'profile',        'as' => 'profile.'], function () {
-        Route::get('/edit',                [App\Http\Controllers\Admin\UserProfileController::class, 'edit'])->name('edit');
-        Route::put('/update',              [App\Http\Controllers\Admin\UserProfileController::class, 'update'])->name('update');
-        Route::put('passwordChange',       [App\Http\Controllers\Admin\UserProfileController::class, 'passwordChange'])->name('passwordChange');
+        Route::get('/edit',                         [App\Http\Controllers\Admin\UserProfileController::class, 'edit'])->name('edit');
+        Route::put('/update',                       [App\Http\Controllers\Admin\UserProfileController::class, 'update'])->name('update');
+        Route::put('passwordChange',                [App\Http\Controllers\Admin\UserProfileController::class, 'passwordChange'])->name('passwordChange');
     });
     //Settings routes
     Route::group(['prefix' => 'setting',        'as' => 'setting.'], function () {
@@ -98,8 +98,12 @@ Route::group(['as' => 'site.',                  'namespace' => 'Site'], function
         Route::post('post/{postId}/like',       [App\Http\Controllers\Site\SiteController::class, 'likePost'])->name('post.like');
         Route::post('post/{postId}/unlike',     [App\Http\Controllers\Site\SiteController::class, 'unlikePost'])->name('post.unlike');
         Route::get('/profile/{id}',             [App\Http\Controllers\Site\SiteController::class, 'profile'])->name('profile');
-        Route::get('/edit',                [App\Http\Controllers\Site\UserProfileController::class, 'edit'])->name('edit');
-        Route::put('/update',              [App\Http\Controllers\Site\UserProfileController::class, 'update'])->name('update');
-        Route::put('passwordChange',       [App\Http\Controllers\Site\UserProfileController::class, 'passwordChange'])->name('passwordChange');
+        Route::get('/edit',                     [App\Http\Controllers\Site\UserProfileController::class, 'edit'])->name('edit');
+        Route::put('/update',                   [App\Http\Controllers\Site\UserProfileController::class, 'update'])->name('update');
+        Route::put('passwordChange',            [App\Http\Controllers\Site\UserProfileController::class, 'passwordChange'])->name('passwordChange');
+        Route::post('/profile/{id}/follow',     [App\Http\Controllers\Site\SiteController::class, 'follow'])->name('profile.follow');
+        Route::post('/profile/{id}/unfollow',   [App\Http\Controllers\Site\SiteController::class, 'unfollow'])->name('profile.unfollow');
+        Route::get('/profile/{id}/followers',   [App\Http\Controllers\Site\SiteController::class, 'followers'])->name('profile.followers');
+        Route::get('/profile/{id}/following',   [App\Http\Controllers\Site\SiteController::class, 'following'])->name('profile.following');
     });
 });

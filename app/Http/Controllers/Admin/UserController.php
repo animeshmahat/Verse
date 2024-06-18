@@ -25,7 +25,7 @@ class UserController extends BaseController
     public function index()
     {
         $authUserId = Auth::id();
-        $data['row'] = User::withCount('posts')->where('id', '!=', $authUserId)->get();
+        $data['row'] = User::withCount('posts')->where('id', '!=', $authUserId)->orderBy('id', 'DESC')->get();
         return view(parent::loadDefaultDataToView($this->view_path . '.index'), compact('data'));
     }
 

@@ -3,10 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Posts;
-use Carbon\Carbon;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Pagination\Paginator;
+use App\Models\User;
 
 class DashboardController extends BaseController
 {
@@ -15,6 +12,8 @@ class DashboardController extends BaseController
     protected $panel = "Pensieve";
     public function index()
     {
-        return view(parent::loadDefaultDataToView($this->base_route));
+        $data['post'] = Posts::where('status', 1)->count();
+        $data['user'] = User::where('status', 1)->where('role', null)->count();
+        return view(parent::loadDefaultDataToView($this->base_route), compact('data'));
     }
 }

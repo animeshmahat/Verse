@@ -189,7 +189,6 @@ class SiteController extends BaseController
 
         return response()->json(['message' => 'Failed to follow the user.'], 400);
     }
-
     public function unfollow($userId)
     {
         $user = User::find($userId);
@@ -200,6 +199,19 @@ class SiteController extends BaseController
         }
 
         return response()->json(['message' => 'Failed to unfollow the user.'], 400);
+    }
+
+    public function followers($id)
+    {
+        $user = User::findOrFail($id);
+        $followers = $user->followers()->get();
+        return response()->json($followers);
+    }
+    public function following($id)
+    {
+        $user = User::findOrFail($id);
+        $following = $user->followings()->get();
+        return response()->json($following);
     }
     public function likePost($id)
     {
@@ -219,7 +231,6 @@ class SiteController extends BaseController
 
         return response()->json(['message' => 'Post liked'], 200);
     }
-
     public function unlikePost($id)
     {
         $post = Posts::findOrFail($id);
@@ -239,8 +250,11 @@ class SiteController extends BaseController
     }
     public function profile($id)
     {
-        $data['row'] = User::findOrFail($id);
+        $user = User::findOrFail($id);
+        $data['row'] = $user;
         $data['post'] = Posts::where('status', 1)->where('user_id', $id)->paginate('10');
+        $data['followersCount'] = $user->followers()->count();
+        $data['followingCount'] = $user->followings()->count();
         Paginator::useBootstrap();
 
         return view(parent::loadDefaultDataToView($this->view_path . '.profile'), compact('data'));
