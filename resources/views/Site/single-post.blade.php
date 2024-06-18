@@ -63,7 +63,7 @@
                 </div>
 
                 @auth
-                <button id="likeButton" class="btn btn-outline-primary btn-sm">
+                <button id="likeButton" class="btn btn-outline-success btn-sm">
                     <i id="likeIcon" class="fa {{ $data['post']->hasLiked(Auth::user()->id) ? 'fa-thumbs-down' : 'fa-thumbs-up' }}"></i>
                     <span id="likeText">{{ $data['post']->hasLiked(Auth::user()->id) ? 'Unlike' : 'Like' }}</span>
                 </button>
@@ -152,7 +152,7 @@
                                         <label for="comment-{{ $comment->id }}" class="form-label" style="font-weight: bold;">Reply:</label>
                                         <textarea class="form-control" id="comment-{{ $comment->id }}" name="comment" rows="3" placeholder="Enter Your Comment" required></textarea>
                                     </div>
-                                    <button type="submit" class="btn btn-primary">Submit</button>
+                                    <button type="submit" class="btn btn-success">Submit</button>
                                 </form>
                             </div>
                             @else
@@ -179,7 +179,7 @@
                                     @enderror
                                 </div>
                                 <div class="col-12">
-                                    <input type="submit" class="btn btn-primary" value="Post comment">
+                                    <input type="submit" class="btn btn-success" value="Post comment">
                                 </div>
                             </div>
                         </form>

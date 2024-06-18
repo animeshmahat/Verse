@@ -105,5 +105,6 @@ Route::group(['as' => 'site.',                  'namespace' => 'Site'], function
         Route::post('/profile/{id}/unfollow',   [App\Http\Controllers\Site\SiteController::class, 'unfollow'])->name('profile.unfollow');
         Route::get('/profile/{id}/followers',   [App\Http\Controllers\Site\SiteController::class, 'followers'])->name('profile.followers');
         Route::get('/profile/{id}/following',   [App\Http\Controllers\Site\SiteController::class, 'following'])->name('profile.following');
+        Route::post('/notifications/mark-as-read', [App\Http\Controllers\Site\NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
     });
 });

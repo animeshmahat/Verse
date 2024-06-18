@@ -58,7 +58,15 @@ class User extends Authenticatable
     {
         return $this->followers()->where('follower_id', $userId)->exists();
     }
-
+    // User.php
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class)->orderBy('created_at', 'desc');
+    }
+    public function unreadNotificationsCount()
+    {
+        return $this->notifications()->where('read', false)->count();
+    }
     protected $hidden = [
         'password',
         'remember_token',

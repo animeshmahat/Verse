@@ -184,6 +184,27 @@ class SiteController extends BaseController
 
         if ($user && !Auth::user()->isFollowing($userId)) {
             Auth::user()->follow($userId);
+
+            // Check for existing notification
+            $notificationData = [
+                'type' => 'follow',
+                'data' => json_encode([
+                    'message' => Auth::user()->name . " started following you."
+                ])
+            ];
+
+            $existingNotification = $user->notifications()
+                ->where('data', $notificationData['data'])
+                ->first();
+
+            if ($existingNotification) {
+                // Update the existing notification's timestamp to now
+                $existingNotification->touch();
+            } else {
+                // Create new notification
+                $user->notifications()->create($notificationData);
+            }
+
             return response()->json(['message' => 'Successfully followed the user.']);
         }
 
@@ -228,6 +249,14 @@ class SiteController extends BaseController
         ]);
 
         $post->increment('likes_count');
+
+        // Create notification
+        $post->user->notifications()->create([
+            'type' => 'like',
+            'data' => json_encode([
+                'message' => "{$user->name} liked your post."
+            ])
+        ]);
 
         return response()->json(['message' => 'Post liked'], 200);
     }

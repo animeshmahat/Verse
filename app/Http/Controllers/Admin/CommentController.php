@@ -12,25 +12,30 @@ class CommentController extends Controller
 {
     public function store(Request $request)
     {
-        // Validate the request data
         $request->validate([
             'post_id' => 'required|exists:posts,id',
             'parent_id' => 'nullable|exists:comments,id',
             'comment' => 'required|string',
         ]);
 
-        // Create and save the comment
-        Comments::create([
+        $comment = Comments::create([
             'post_id' => $request->post_id,
             'parent_id' => $request->parent_id,
-            'user_id' => Auth::id(), // Assuming the user is authenticated
+            'user_id' => Auth::id(),
             'comment' => $request->comment,
         ]);
 
         $post = Posts::findOrFail($request->post_id);
         $post->increment('comments_count');
 
-        // Redirect back to the post view with a success message
+        // Create notification
+        $post->user->notifications()->create([
+            'type' => 'comment',
+            'data' => json_encode([
+                'message' => Auth::user()->name . " commented on your post."
+            ])
+        ]);
+
         return redirect()->back()->with('success', 'Comment successfully added.');
     }
     public function destroy($id)
