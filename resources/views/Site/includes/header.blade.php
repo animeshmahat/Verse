@@ -20,7 +20,10 @@
                 @endif
             </ul>
             </li>
-            <li><a href="#">About</a></li>
+
+            @auth
+            <li><a href="#">Latest</a></li>
+            @endauth
 
             @guest
             <li><a href="{{ route('login') }}">Login</a></li>
@@ -45,21 +48,22 @@
             </li>
             <li class="nav-item dropdown">
                 <a id="navbarDropdown" class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    Notifications<i class="bi bi-chevron-down dropdown-indicator"></i>
+                    Notifications <i class="bi bi-chevron-down dropdown-indicator"></i>
                 </a>
-
                 <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                     @if(Auth::user()->notifications->isEmpty())
                     <li class="dropdown-item">No notifications</li>
                     @else
                     @foreach(Auth::user()->notifications as $notification)
                     <li class="dropdown-item {{ $notification->read ? '' : 'font-weight-bold' }}">
-                        {{ json_decode($notification->data)->message }}
+                        @php
+                        $notificationData = json_decode($notification->data);
+                        @endphp
+                        {{ $notificationData->message }}
+                        <br>
+                        <small class="text-muted">{{ $notification->created_at->diffForHumans() }}</small>
                     </li>
                     @endforeach
-                    <li class="dropdown-item">
-                        <a href="#" id="markAsRead" class="text-center">Mark as read</a>
-                    </li>
                     @endif
                 </ul>
             </li>
@@ -68,7 +72,7 @@
                     let navbarDropdown = document.getElementById('navbarDropdown');
                     let hasUnreadNotifications = {
                         {
-                            Auth::user() - > unreadNotifications - > count()
+                            Auth::user() - > unreadNotificationsCount()
                         }
                     } > 0;
 
@@ -85,22 +89,6 @@
                             }
                         }).then(response => response.json()).then(data => {
                             navbarDropdown.style.color = 'black';
-                            console.log(data.message);
-                        });
-                    });
-
-                    document.getElementById('markAsRead').addEventListener('click', function(e) {
-                        e.preventDefault();
-                        fetch('/notifications/mark-as-read', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                            }
-                        }).then(response => response.json()).then(data => {
-                            document.querySelectorAll('.dropdown-item.font-weight-bold').forEach(item => {
-                                item.classList.remove('font-weight-bold');
-                            });
                             console.log(data.message);
                         });
                     });

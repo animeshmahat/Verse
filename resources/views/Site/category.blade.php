@@ -8,7 +8,7 @@
 <section>
     <div class="container">
         <div class="row">
-            <div class="col-md-9" data-aos="fade-up">
+            <div class="col-md-9">
                 <h3 class="category-title">Category: {{$data['category']->name}}</h3>
 
                 @if(isset($data['post']) && $data['post']->isNotEmpty())

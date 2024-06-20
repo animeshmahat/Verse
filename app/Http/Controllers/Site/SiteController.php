@@ -254,7 +254,8 @@ class SiteController extends BaseController
         $post->user->notifications()->create([
             'type' => 'like',
             'data' => json_encode([
-                'message' => "{$user->name} liked your post."
+                'message' => "{$user->name} liked your post.",
+                'post_title' => $post->title // Include the post title here
             ])
         ]);
 

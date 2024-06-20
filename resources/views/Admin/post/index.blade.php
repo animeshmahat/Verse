@@ -80,7 +80,12 @@
                         <td>
                             <div class="d-flex flex-row align-items-center">
                                 <a href="{{ route('admin.post.view', ['id' => $row->id]) }}" class="btn-circle btn-primary m-1"><i class="fa fa-eye" aria-hidden="true"></i></a>
+                                @if (Auth::id() === $row->user_id)
+                                <a href="{{ route('admin.post.edit', ['id' => $row->id]) }}" class="btn-circle btn-warning m-1"><i class="fa fa-pen" aria-hidden="true"></i></a>
                                 <a href="{{ route('admin.post.delete', ['id' => $row->id]) }}" class="btn-circle btn-danger m-1" onclick="return confirm('Permanently delete this record?')"><i class="fa fa-trash" aria-hidden="true"></i></a>
+                                @elseif (Auth::user()->role === 'superadmin')
+                                <a href="{{ route('admin.post.delete', ['id' => $row->id]) }}" class="btn-circle btn-danger m-1" onclick="return confirm('Permanently delete this record?')"><i class="fa fa-trash" aria-hidden="true"></i></a>
+                                @endif
                             </div>
                         </td>
                     </tr>

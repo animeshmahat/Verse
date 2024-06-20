@@ -44,16 +44,15 @@ Route::group(['prefix' => '/admin',             'as' => 'admin.', 'middleware' =
         Route::post('/update/{id}',                [App\Http\Controllers\Admin\TagController::class, 'update'])->name('update');
         Route::delete('/delete/{id}',              [App\Http\Controllers\Admin\TagController::class, 'delete'])->name('delete');
     });
-
     //Post routes
-    Route::group(['prefix' => 'post',           'as' => 'post.'], function () {
+    Route::group(['prefix' => 'post', 'as' => 'post.'], function () {
         Route::get('/',                             [App\Http\Controllers\Admin\PostController::class, 'index'])->name('index');
         Route::get('/create',                       [App\Http\Controllers\Admin\PostController::class, 'create'])->name('create');
         Route::post('/',                            [App\Http\Controllers\Admin\PostController::class, 'store'])->name('store');
-        Route::get('/edit/{id}',                    [App\Http\Controllers\Admin\PostController::class, 'edit'])->name('edit');
-        Route::put('/update/{id}',                  [App\Http\Controllers\Admin\PostController::class, 'update'])->name('update');
+        Route::get('/edit/{id}',                    [App\Http\Controllers\Admin\PostController::class, 'edit'])->name('edit')->middleware('checkPostOwner');
+        Route::put('/update/{id}',                  [App\Http\Controllers\Admin\PostController::class, 'update'])->name('update')->middleware('checkPostOwner');
         Route::get('/view/{id}',                    [App\Http\Controllers\Admin\PostController::class, 'view'])->name('view');
-        Route::get('/delete/{id}',                  [App\Http\Controllers\Admin\PostController::class, 'delete'])->name('delete');
+        Route::get('/delete/{id}',                  [App\Http\Controllers\Admin\PostController::class, 'delete'])->name('delete')->middleware('checkPostOwner');
     });
     //User Profile
     Route::group(['prefix' => 'profile',        'as' => 'profile.'], function () {
@@ -93,18 +92,29 @@ Route::group(['as' => 'site.',                  'namespace' => 'Site'], function
 
     // Protect comment routes with auth middleware
     Route::middleware(['auth'])->group(function () {
-        Route::post('/post/{post_id}/comment',  [App\Http\Controllers\Admin\CommentController::class, 'store'])->name('comment.store');
-        Route::delete('/comment/{id}',          [App\Http\Controllers\Admin\CommentController::class, 'destroy'])->name('comment.destroy');
-        Route::post('post/{postId}/like',       [App\Http\Controllers\Site\SiteController::class, 'likePost'])->name('post.like');
-        Route::post('post/{postId}/unlike',     [App\Http\Controllers\Site\SiteController::class, 'unlikePost'])->name('post.unlike');
-        Route::get('/profile/{id}',             [App\Http\Controllers\Site\SiteController::class, 'profile'])->name('profile');
-        Route::get('/edit',                     [App\Http\Controllers\Site\UserProfileController::class, 'edit'])->name('edit');
-        Route::put('/update',                   [App\Http\Controllers\Site\UserProfileController::class, 'update'])->name('update');
-        Route::put('passwordChange',            [App\Http\Controllers\Site\UserProfileController::class, 'passwordChange'])->name('passwordChange');
-        Route::post('/profile/{id}/follow',     [App\Http\Controllers\Site\SiteController::class, 'follow'])->name('profile.follow');
-        Route::post('/profile/{id}/unfollow',   [App\Http\Controllers\Site\SiteController::class, 'unfollow'])->name('profile.unfollow');
-        Route::get('/profile/{id}/followers',   [App\Http\Controllers\Site\SiteController::class, 'followers'])->name('profile.followers');
-        Route::get('/profile/{id}/following',   [App\Http\Controllers\Site\SiteController::class, 'following'])->name('profile.following');
-        Route::post('/notifications/mark-as-read', [App\Http\Controllers\Site\NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
+        Route::get('/write',                        [App\Http\Controllers\Site\PostController::class, 'write'])->name('write');
+        Route::post('/post/{post_id}/comment',      [App\Http\Controllers\Admin\CommentController::class, 'store'])->name('comment.store');
+        Route::delete('/comment/{id}',              [App\Http\Controllers\Admin\CommentController::class, 'destroy'])->name('comment.destroy');
+        Route::post('post/{postId}/like',           [App\Http\Controllers\Site\SiteController::class, 'likePost'])->name('post.like');
+        Route::post('post/{postId}/unlike',         [App\Http\Controllers\Site\SiteController::class, 'unlikePost'])->name('post.unlike');
+        Route::get('/profile/{id}',                 [App\Http\Controllers\Site\SiteController::class, 'profile'])->name('profile');
+        Route::get('/edit',                         [App\Http\Controllers\Site\UserProfileController::class, 'edit'])->name('edit');
+        Route::put('/update',                       [App\Http\Controllers\Site\UserProfileController::class, 'update'])->name('update');
+        Route::put('passwordChange',                [App\Http\Controllers\Site\UserProfileController::class, 'passwordChange'])->name('passwordChange');
+        Route::post('/profile/{id}/follow',         [App\Http\Controllers\Site\SiteController::class, 'follow'])->name('profile.follow');
+        Route::post('/profile/{id}/unfollow',       [App\Http\Controllers\Site\SiteController::class, 'unfollow'])->name('profile.unfollow');
+        Route::get('/profile/{id}/followers',       [App\Http\Controllers\Site\SiteController::class, 'followers'])->name('profile.followers');
+        Route::get('/profile/{id}/following',       [App\Http\Controllers\Site\SiteController::class, 'following'])->name('profile.following');
+        Route::post('/notifications/mark-as-read',  [App\Http\Controllers\Site\NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
+
+        // Post routes 
+        Route::group(['prefix' => 'post', 'as' => 'post.'], function () {
+            Route::get('/',                         [App\Http\Controllers\Site\PostController::class, 'index'])->name('index');
+            Route::post('/',                        [App\Http\Controllers\Site\PostController::class, 'store'])->name('store');
+            Route::get('/edit/{id}',                [App\Http\Controllers\Site\PostController::class, 'edit'])->name('edit')->middleware('checkPostOwner');
+            Route::put('/update/{id}',              [App\Http\Controllers\Site\PostController::class, 'update'])->name('update')->middleware('checkPostOwner');
+            Route::get('/view/{id}',                [App\Http\Controllers\Site\PostController::class, 'view'])->name('view');
+            Route::get('/delete/{id}',              [App\Http\Controllers\Site\PostController::class, 'delete'])->name('delete')->middleware('checkPostOwner');
+        });
     });
 });

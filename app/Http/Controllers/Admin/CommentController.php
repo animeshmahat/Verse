@@ -32,7 +32,7 @@ class CommentController extends Controller
         $post->user->notifications()->create([
             'type' => 'comment',
             'data' => json_encode([
-                'message' => Auth::user()->name . " commented on your post."
+                'message' => Auth::user()->name . " commented on your post ({$post->title})."
             ])
         ]);
 

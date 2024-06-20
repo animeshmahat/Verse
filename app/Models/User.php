@@ -7,21 +7,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use Illuminate\Support\Facades\DB;
 
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
     protected $fillable = [
-        'name',
-        'email',
-        'image',
-        'password',
-        'username',
-        'mobile',
-        'status',
-        'role',
+        'name', 'email', 'image', 'password', 'username', 'mobile', 'status', 'role',
     ];
 
     public function posts()
@@ -58,18 +50,19 @@ class User extends Authenticatable
     {
         return $this->followers()->where('follower_id', $userId)->exists();
     }
-    // User.php
+
     public function notifications()
     {
         return $this->hasMany(Notification::class)->orderBy('created_at', 'desc');
     }
+
     public function unreadNotificationsCount()
     {
         return $this->notifications()->where('read', false)->count();
     }
+
     protected $hidden = [
-        'password',
-        'remember_token',
+        'password', 'remember_token',
     ];
 
     protected $casts = [

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Site;
 
 use App\Http\Controllers\Admin\BaseController;
 use Illuminate\Http\Request;
@@ -11,8 +11,8 @@ use Illuminate\Support\Str;
 
 class PostController extends BaseController
 {
-    protected $base_route = "admin.post.index";
-    protected $view_path = "admin.post";
+    protected $base_route = "site.post.index";
+    protected $view_path = "site.post";
     protected $panel = "Blog";
     protected $model;
 
@@ -23,11 +23,10 @@ class PostController extends BaseController
 
     public function index()
     {
-        $data['row'] = Posts::with(['user', 'category'])->get();
+        $data['row'] = Posts::with(['user', 'category'])->where('user_id', Auth::id())->get();
         return view(parent::loadDefaultDataToView($this->view_path . '.index'), compact('data'));
     }
-
-    public function create()
+    public function write()
     {
         $category = $this->model->getCategory();
         $tags = $this->model->getTags();
@@ -35,19 +34,16 @@ class PostController extends BaseController
             'category' => $category,
             'tags' => $tags,
         ];
-        return view(parent::loadDefaultDataToView($this->view_path . '.create'), compact('data'));
+        return view('site.post.write', compact('data'));
     }
-
     public function store(Request $request)
     {
-        // Validate the request data
         $validator = $this->model->getRules($request->all());
 
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
-        // Create a new post model instance and set its properties
         $model = $this->model;
         $model->user_id = auth()->user()->id;
         $model->category_id = $request->category_id;
@@ -60,11 +56,9 @@ class PostController extends BaseController
         $model->comments_count = 0;
         $model->likes_count = 0;
 
-        // Ensure the upload directory exists
         $folderPath = public_path('uploads/post');
         $this->createFolderIfNotExist($folderPath);
 
-        // Handle file upload
         if ($request->hasFile('thumbnail')) {
             $thumbnail = $request->file('thumbnail');
             $imageName = time() . '.' . $thumbnail->getClientOriginalExtension();
@@ -74,7 +68,6 @@ class PostController extends BaseController
         }
         $model->thumbnail = $imageName;
 
-        // Save the model to the database first before syncing tags
         DB::beginTransaction();
         try {
             $model->save();
@@ -83,27 +76,27 @@ class PostController extends BaseController
 
             DB::commit();
 
-            // Set the success message and redirect
             $request->session()->flash('success', $this->panel . ' successfully added.');
             return redirect()->route($this->base_route);
         } catch (\Exception $e) {
             DB::rollBack();
-            // Log the error for debugging purposes
             \Log::error('Tag sync failed', ['error' => $e->getMessage(), 'tags' => $request->tags]);
             return redirect()->back()->withErrors(['tags' => 'Tag sync failed.'])->withInput();
         }
     }
-
     public function view(Request $request, $id)
     {
-        $data['row'] = Posts::with(['user', 'category', 'tags'])->findOrFail($id);
-        return view(parent::loadDefaultDataToView($this->view_path . '.view'), compact('data'));
+        $post = Posts::findOrFail($id);
+        if (Auth::id() !== $post->user_id) {
+            return redirect()->route($this->base_route)->with('error', 'You are not authorized to view this post.');
+        }
+        return redirect()->route('site.single_post', ['slug' => $post->slug]);
     }
     public function edit($id)
     {
         $post = $this->model->findOrFail($id);
         if (Auth::id() !== $post->user_id) {
-            return redirect()->route('admin.post.index')->with('error', 'You are not authorized to edit this post.');
+            return redirect()->route($this->base_route)->with('error', 'You are not authorized to edit this post.');
         }
 
         $data = [];
@@ -116,7 +109,7 @@ class PostController extends BaseController
     {
         $post = $this->model->findOrFail($id);
         if (Auth::id() !== $post->user_id) {
-            return redirect()->route('admin.post.index')->with('error', 'You are not authorized to update this post.');
+            return redirect()->route($this->base_route)->with('error', 'You are not authorized to update this post.');
         }
 
         $validator = $this->model->getRules($request->all());
@@ -131,7 +124,6 @@ class PostController extends BaseController
         $post->status = $request->status ? true : false;
 
         if ($request->hasFile('thumbnail')) {
-            // Delete old thumbnail if exists
             if ($post->thumbnail) {
                 $image_path = public_path("uploads/post/{$post->thumbnail}");
                 if (file_exists($image_path)) {
@@ -160,11 +152,12 @@ class PostController extends BaseController
             return redirect()->back()->withErrors(['tags' => 'Tag sync failed.'])->withInput();
         }
     }
+
     public function delete($id)
     {
         $post = $this->model->findOrFail($id);
-        if (Auth::id() !== $post->user_id && Auth::user()->role !== 'superadmin') {
-            return redirect()->route('admin.post.index')->with('error', 'You are not authorized to delete this post.');
+        if (Auth::id() !== $post->user_id) {
+            return redirect()->route($this->base_route)->with('error', 'You are not authorized to delete this post.');
         }
 
         if ($post->thumbnail) {
@@ -173,7 +166,6 @@ class PostController extends BaseController
                 unlink($image_path);
             }
         }
-
         $success = $post->delete();
 
         if ($success) {
