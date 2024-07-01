@@ -126,14 +126,19 @@
         document.getElementById('thumbnail').value = '';
     });
 </script>
-<script src="//cdn.ckeditor.com/4.6.2/full/ckeditor.js"></script>
+<script src="https://cdn.ckeditor.com/ckeditor5/34.1.0/classic/ckeditor.js"></script>
 <script>
-    var options = {
-        filebrowserImageBrowseUrl: '/laravel-filemanager?type=Images',
-        filebrowserImageUploadUrl: '/laravel-filemanager/upload?type=Images&_token=',
-        filebrowserBrowseUrl: '/laravel-filemanager?type=Files',
-        filebrowserUploadUrl: '/laravel-filemanager/upload?type=Files&_token='
-    };
-    CKEDITOR.replace('description', options);
+    ClassicEditor
+        .create(document.querySelector('#description'), {
+            ckfinder: {
+                uploadUrl: '/laravel-filemanager/upload?type=Images&_token={{ csrf_token() }}',
+                options: {
+                    resourceType: 'Images'
+                }
+            }
+        })
+        .catch(error => {
+            console.error(error);
+        });
 </script>
 @endsection

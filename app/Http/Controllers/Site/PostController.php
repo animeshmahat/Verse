@@ -8,6 +8,7 @@ use App\Models\Posts;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Pagination\Paginator;
 
 class PostController extends BaseController
 {
@@ -20,10 +21,10 @@ class PostController extends BaseController
     {
         $this->model = new Posts;
     }
-
     public function index()
     {
-        $data['row'] = Posts::with(['user', 'category'])->where('user_id', Auth::id())->get();
+        $data['row'] = Posts::with(['user', 'category'])->where('user_id', Auth::id())->paginate('10');
+        Paginator::useBootstrap();
         return view(parent::loadDefaultDataToView($this->view_path . '.index'), compact('data'));
     }
     public function write()

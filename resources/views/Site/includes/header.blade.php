@@ -8,7 +8,7 @@
 
         <nav id="navbar" class="navbar">
             <ul>
-                <li><a href="{{ route('site.index') }}">Home</a></li>
+                <li><a href="#">Latest</a></li>
                 <li class="dropdown"><a href="#"><span>Categories</span> <i class="bi bi-chevron-down dropdown-indicator"></i></a>
                     <ul>
                         @if(isset($all_view['category']) && $all_view['category']->isNotEmpty())
@@ -20,10 +20,6 @@
                 @endif
             </ul>
             </li>
-
-            @auth
-            <li><a href="#">Latest</a></li>
-            @endauth
 
             @guest
             <li><a href="{{ route('login') }}">Login</a></li>
@@ -47,8 +43,7 @@
                 </ul>
             </li>
             <li class="nav-item dropdown">
-                <a id="navbarDropdown" class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    Notifications <i class="bi bi-chevron-down dropdown-indicator"></i>
+                <a id="navbarDropdown" class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fa fa-bell"></i><i class="bi bi-chevron-down dropdown-indicator"></i>
                 </a>
                 <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                     @if(Auth::user()->notifications->isEmpty())

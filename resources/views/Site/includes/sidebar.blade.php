@@ -3,8 +3,8 @@
     <div class="aside-block">
         @auth
         <div class="mb-2">
-            <a class="btn btn-outline-dark" href="{{route('site.write')}}" style="background-color:#EBFFE1;">Write&nbsp;<i class="fa fa-sm fa-pen-nib"></i></a>
-            <a class="btn btn-outline-dark" href="{{route('site.post.index')}}" style="background-color:#FCF9D1;">Your Posts&nbsp;<i class="fa fa-sm fa-table"></i></a>
+            <a class="btn btn-outline-dark" href="{{route('site.write')}}">Write &nbsp;<i class="fa fa-sm fa-pen-nib"></i></a>
+            <a class="btn btn-outline-dark" href="{{route('site.post.index')}}">Your Posts &nbsp;<i class="fa fa-sm fa-table"></i></a>
         </div>
         @endauth
 

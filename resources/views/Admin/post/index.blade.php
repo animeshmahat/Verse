@@ -101,7 +101,6 @@
 @endsection
 
 @section('js')
-<!-- Toastr JS -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const sessionData = document.getElementById('session-data');

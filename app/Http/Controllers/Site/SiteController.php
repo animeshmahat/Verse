@@ -101,23 +101,46 @@ class SiteController extends BaseController
     public function single_post(Request $request, $slug)
     {
         $post = Posts::where('slug', $slug)->firstOrFail();
+        $post_id = $post->id;
 
-        // Check if the user has viewed this post in this session
+        // Get viewed posts data from the session
         $viewedPosts = session()->get('viewed_posts', []);
-        if (!in_array($post->id, $viewedPosts)) {
-            // Increment the views count if not viewed in this session
+
+        // Check if the post has been viewed in the session
+        if (isset($viewedPosts[$post_id])) {
+            $viewData = $viewedPosts[$post_id];
+            $lastViewed = $viewData['last_viewed'];
+            $viewCount = $viewData['count'];
+
+            // Check the time interval and view count
+            if ($viewCount < 5 && now()->diffInSeconds($lastViewed) >= 30) {
+                // Increment the views count
+                $post->increment('views');
+
+                // Update the view data
+                $viewedPosts[$post_id]['last_viewed'] = now();
+                $viewedPosts[$post_id]['count']++;
+            }
+        } else {
+            // Increment the views count for the first view in the session
             $post->increment('views');
-            // Store the post ID in the session to mark it as viewed
-            session()->push('viewed_posts', $post->id);
+
+            // Initialize the view data for this post
+            $viewedPosts[$post_id] = [
+                'last_viewed' => now(),
+                'count' => 1,
+            ];
         }
+
+        // Store the updated viewed posts data in the session
+        session()->put('viewed_posts', $viewedPosts);
 
         // Store the datetime of the view
         PostView::create([
-            'post_id' => $post->id,
+            'post_id' => $post_id,
             'viewed_at' => now(),
         ]);
 
-        $post_id = $post->id;
         $comments = Comments::where('post_id', $post_id)->get();
 
         // Sidebar info 
@@ -133,7 +156,7 @@ class SiteController extends BaseController
 
         // Calculate reading time (words per minute)
         $wordCount = str_word_count(strip_tags($post->description));
-        $readingTime = ceil($wordCount / 238); // Assuming 200 words per minute
+        $readingTime = ceil($wordCount / 238); // Assuming 238 words per minute
 
         $data = [
             'post' => $post,
