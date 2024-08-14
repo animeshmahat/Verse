@@ -7,7 +7,7 @@
             <i class="fas fa-feather"></i>
         </div>
         <div class="sidebar-brand-text mx-3" style="font-family:'Times New Roman', Times, serif">
-            <h2>Verse</h2>
+            <h2 style="color: #ffffff;">Verse</h2>
         </div>
     </a>
 

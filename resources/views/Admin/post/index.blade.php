@@ -42,6 +42,7 @@
                         <th>Thumbnail</th>
                         <th>Views</th>
                         <th>Posted On & By</th>
+                        <th>Sentiment</th>
                         <th>Status</th>
                         <th>Action</th>
                     </tr>
@@ -54,6 +55,7 @@
                         <th>Thumbnail</th>
                         <th>Views</th>
                         <th>Posted On & By</th>
+                        <th>Sentiment</th>
                         <th>Status</th>
                         <th>Action</th>
                     </tr>
@@ -70,6 +72,7 @@
                         </td>
                         <td>{{ $row->views }}</td>
                         <td>{{ $row->created_at->format('H:i.A D-m-d-Y') }} by <br> <strong>{{$row->user->name}}</strong> ({{$row->user->username}})</td>
+                        <td>#</td>
                         <td>
                             @if($row->status == '1')
                             <span class="badge rounded-pill badge-success">Active</span>
