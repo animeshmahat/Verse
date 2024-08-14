@@ -52,6 +52,9 @@
                     </div>
                     @if($data['post']->created_at != $data['post']->updated_at)
                     <span style="font-weight: italic; color: gray;">Updated at : {{ $data['post']->updated_at->format('D Y-m-d') }} at {{ $data['post']->updated_at->format('H:i A') }}</span>
+                    <span>
+                        <button class="btn btn-sm btn-outline-dark" id="summarizeBtn" style="font-family:'Times New Roman', Times, serif;">SUMMARIZE</button>
+                    </span>
                     @endif
                     <h1 class="mb-5">{{ $data['post']->title }}</h1>
 
@@ -193,6 +196,44 @@
         </div>
     </div>
 </section>
+<!-- Summarization Modal -->
+<div class="modal fade" id="summarizeModal" tabindex="-1" role="dialog" aria-labelledby="summarizeModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="summarizeModalLabel">Summary</h5>
+            </div>
+            <div class="modal-body">
+                <!-- Tab links -->
+                <div class="tab">
+                    <button class="tablinks" onclick="openSummary(event, 'BulletPoints')" id="defaultOpen"><i class="fa-solid fa-list"></i> Points</button>
+                    <button class="tablinks" onclick="openSummary(event, 'Paragraph')"><i class="fa-solid fa-paragraph"></i> Paragraph</button>
+                </div>
+
+                <!-- Tab content -->
+                <div id="Paragraph" class="tabcontent">
+                    <p id="paragraphSummary">{!! $data['paragraph_summary'] !!}</p>
+                </div>
+
+                <div id="BulletPoints" class="tabcontent">
+                    <ul id="bulletPointsSummary">
+                        @if(is_array($data['bullet_point_summary']) && count($data['bullet_point_summary']) > 0)
+                        @foreach($data['bullet_point_summary'] as $bullet)
+                        <li>{!! $bullet !!}</li>
+                        @endforeach
+                        @else
+                        <li>No bullet points available.</li>
+                        @endif
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <p>Press <span><i>Esc</i></span> to escape.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @section('js')
@@ -254,5 +295,33 @@
             });
         });
     });
+</script>
+<script>
+    $(document).ready(function() {
+        $('#summarizeBtn').click(function() {
+            $('#summarizeModal').modal('show');
+        });
+
+        $('.reply-link').click(function() {
+            var commentId = $(this).data('comment-id');
+            $('#reply-form-' + commentId).toggle();
+        });
+
+        document.getElementById("defaultOpen").click();
+    });
+
+    function openSummary(evt, summaryType) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tabcontent");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+        }
+        tablinks = document.getElementsByClassName("tablinks");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+        document.getElementById(summaryType).style.display = "block";
+        evt.currentTarget.className += " active";
+    }
 </script>
 @endsection

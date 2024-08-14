@@ -18,7 +18,7 @@
          </div>
      </form> -->
 
-     <a href="{{route('site.index')}}" class="btn btn-outline-primary">Site&nbsp;<i class="fa-solid fa-sm fa-door-open"></i></a>
+     <a href="{{route('site.index')}}" target="_blank" class="btn btn-outline-primary">Site&nbsp;<i class="fa-solid fa-sm fa-door-open"></i></a>
 
      <!-- Topbar Navbar -->
      <ul class="navbar-nav ml-auto">

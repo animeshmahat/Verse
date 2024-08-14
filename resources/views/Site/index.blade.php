@@ -27,20 +27,20 @@
                 <div class="tab-content" id="myTabContent">
                     <!-- For You tab -->
                     <div class="tab-pane mt-2 fade show active" id="for-you" role="tabpanel" aria-labelledby="for-you-tab">
-                        @if(isset($data['post']) && $data['post']->isNotEmpty())
-                        @foreach($data['post'] as $row)
+                        @if(isset($data['allPosts']) && $data['allPosts']->isNotEmpty())
+                        @foreach($data['allPosts'] as $row)
                         <div class="d-md-flex post-entry-2 half">
                             <a href="{{ route('site.single_post', $row->slug)}}" class="me-4 thumbnail">
                                 <img src="{{ asset('/uploads/post/' . $row->thumbnail) }}" alt="" class="img-fluid">
                             </a>
                             <div>
                                 <div class="post-meta"><span class="date">{{$row->category->name}}</span> <span class="mx-1">&bullet;</span>
-                                    <span>{{$row->created_at->format('Y-m-d')}}<span class="mx-1"></span>&bullet;</span>
+                                    <span>{{$row->created_at->diffForHumans()}}<span class="mx-1"></span>&bullet;</span>
                                     <span><i class="fa fa-thumbs-up"></i>{{$row->likes_count}}<span class="mx-1"></span>
                                         <span><i class="fa fa-comment"></i>{{$row->comments_count}}</span>
                                 </div>
                                 <h3><a href="{{ route('site.single_post', $row->slug)}}">{{$row->title}}</a></h3>
-                                <p>{!! html_entity_decode(substr(($row->description), 0, 250)) !!}.........</p>
+                                <p>{!! html_entity_decode(substr(($row->description), 0, 100)) !!}..</p>
                                 <div class="d-flex align-items-center author">
                                     @if(isset($row->user->image))
                                     <div class="photo"><img src="{{asset('/uploads/user_image/' . $row->user->image)}}" alt="" class="img-fluid"></div>
@@ -53,24 +53,30 @@
                             </div>
                         </div>
                         @endforeach
+                        @else
+                        <div>
+                            <h3>&nbsp;&nbsp;No Blogs To Show <i class="fa-solid fa-face-meh"></i></h3>
+                            <img src="{{asset('assets/Site/oops.gif')}}" alt="">
+                        </div>
                         @endif
                     </div>
+
                     <!-- Following tab -->
                     <div class="tab-pane mt-2 fade" id="following" role="tabpanel" aria-labelledby="following-tab">
-                        @if(isset($data['post']) && $data['post']->isNotEmpty())
-                        @foreach($data['post'] as $row)
+                        @if(isset($data['followingPosts']) && $data['followingPosts']->isNotEmpty())
+                        @foreach($data['followingPosts'] as $row)
                         <div class="d-md-flex post-entry-2 half">
                             <a href="{{ route('site.single_post', $row->slug)}}" class="me-4 thumbnail">
                                 <img src="{{ asset('/uploads/post/' . $row->thumbnail) }}" alt="" class="img-fluid">
                             </a>
                             <div>
                                 <div class="post-meta"><span class="date">{{$row->category->name}}</span> <span class="mx-1">&bullet;</span>
-                                    <span>{{$row->created_at->format('Y-m-d')}}<span class="mx-1"></span>&bullet;</span>
+                                    <span>{{$row->created_at->diffForHumans()}}<span class="mx-1"></span>&bullet;</span>
                                     <span><i class="fa fa-thumbs-up"></i>{{$row->likes_count}}<span class="mx-1"></span>
                                         <span><i class="fa fa-comment"></i>{{$row->comments_count}}</span>
                                 </div>
                                 <h3><a href="{{ route('site.single_post', $row->slug)}}">{{$row->title}}</a></h3>
-                                <p>{!! html_entity_decode(substr(($row->description), 0, 250)) !!}.........</p>
+                                <p>{!! html_entity_decode(substr(($row->description), 0, 100)) !!}..</p>
                                 <div class="d-flex align-items-center author">
                                     @if(isset($row->user->image))
                                     <div class="photo"><img src="{{asset('/uploads/user_image/' . $row->user->image)}}" alt="" class="img-fluid"></div>
@@ -83,7 +89,11 @@
                             </div>
                         </div>
                         @endforeach
-                        @endif
+                        @else
+                        <div>
+                            <h3>&nbsp;&nbsp;No Blogs To Show <i class="fa-solid fa-face-meh"></i></h3>
+                            <img src="{{asset('assets/Site/oops.gif')}}" alt="">
+                        </div> @endif
                     </div>
                 </div>
             </div>
@@ -93,5 +103,4 @@
 </section>
 @endsection
 @section('js')
-
 @endsection

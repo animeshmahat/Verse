@@ -12,6 +12,7 @@ use App\Models\Tags;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Services\PostService;
+use App\Services\TextRankService;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Auth;
 
@@ -21,13 +22,23 @@ class SiteController extends BaseController
     protected $view_path  = "site";
     protected $panel = "Verse";
     protected $postService;
-    public function __construct(PostService $postService)
+    protected $textRankService;
+    public function __construct(PostService $postService, TextRankService $textRankService)
     {
         $this->postService = $postService;
+        $this->textRankService = $textRankService;
     }
     public function index(Request $request)
     {
-        $post = Posts::where('status', 1)->get();
+        $user = auth()->user();
+
+        // All posts for the "For You" tab
+        $allPosts = Posts::where('status', 1)->orderBy('created_at', 'DESC')->get();
+
+        // Posts from users the current user is following for the "Following" tab
+        $followingPosts = Posts::where('status', 1)
+            ->whereIn('user_id', $user->followings()->pluck('followed_id'))
+            ->get();
 
         // Sidebar info 
         $categories = Category::get();
@@ -41,7 +52,8 @@ class SiteController extends BaseController
         $trendingPosts = $this->postService->getTrendingPosts();
 
         $data = [
-            'post' => $post,
+            'allPosts' => $allPosts,
+            'followingPosts' => $followingPosts,
             'categoriesWithMostPosts' => $categoriesWithMostPosts,
             'tagsWithMostPosts' => $tagsWithMostPosts,
             'popularPosts' => $popularPosts,
@@ -50,6 +62,7 @@ class SiteController extends BaseController
 
         return view(parent::loadDefaultDataToView($this->view_path . '.index'), compact('data'));
     }
+
     public function search(Request $request)
     {
         $search = $request->input('search');
@@ -154,6 +167,9 @@ class SiteController extends BaseController
         $popularPosts = Posts::orderBy('views', 'DESC')->take(7)->get();
         $trendingPosts = $this->postService->getTrendingPosts();
 
+        //summary
+        $summaries = $this->textRankService->summarizeText($post->title, $post->description);
+
         // Calculate reading time (words per minute)
         $wordCount = str_word_count(strip_tags($post->description));
         $readingTime = ceil($wordCount / 238); // Assuming 238 words per minute
@@ -166,6 +182,8 @@ class SiteController extends BaseController
             'tagsWithMostPosts' => $tagsWithMostPosts,
             'popularPosts' => $popularPosts,
             'trendingPosts' => $trendingPosts,
+            'paragraph_summary' => $summaries['paragraph'] ?? '',
+            'bullet_point_summary' => $summaries['bullet_points'] ?? [],
             'readingTime' => $readingTime,
         ];
 

@@ -8,7 +8,7 @@
 @section('content')
 <div class="container">
     <div class="row">
-        <div class="col-10 mx-auto">
+        <div class="col-10 mx-auto mt-5">
             <div class="card card-shadow">
                 @if(isset($data['row']))
                 <div class="card-body text-center">
