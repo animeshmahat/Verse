@@ -8,6 +8,7 @@ use App\Models\Posts;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use GuzzleHttp\Client;
 
 class PostController extends BaseController
 {
@@ -20,13 +21,34 @@ class PostController extends BaseController
     {
         $this->model = new Posts;
     }
-
     public function index()
     {
-        $data['row'] = Posts::with(['user', 'category'])->get();
+        $posts = Posts::with(['user', 'category'])->get();
+
+        // Initialize Guzzle client
+        $client = new Client();
+
+        foreach ($posts as $post) {
+            if ($post->title) {
+                // Send the title to the Flask API
+                $response = $client->post('http://127.0.0.1:5000/predict', [
+                    'json' => ['text' => $post->title]
+                ]);
+
+                // Get the sentiment from the API response
+                $result = json_decode($response->getBody(), true);
+
+                // Attach the sentiment to the post object
+                $post->sentiment = $result['sentiment']; // 'positive', 'negative', or 'neutral'
+            } else {
+                // Default value if title is missing
+                $post->sentiment = 'unknown';
+            }
+        }
+
+        $data['row'] = $posts;
         return view(parent::loadDefaultDataToView($this->view_path . '.index'), compact('data'));
     }
-
     public function create()
     {
         $category = $this->model->getCategory();
@@ -97,6 +119,23 @@ class PostController extends BaseController
     public function view(Request $request, $id)
     {
         $data['row'] = Posts::with(['user', 'category', 'tags'])->findOrFail($id);
+        // Initialize Guzzle client
+        $client = new Client();
+
+        if (isset($data['row']->title)) {
+            // Send the title to the Flask API
+            $response = $client->post('http://127.0.0.1:5000/predict', [
+                'json' => ['text' => $data['row']->title]
+            ]);
+
+            // Get the sentiment from the API response
+            $result = json_decode($response->getBody(), true);
+            // Attach the sentiment to the post object
+            $data['row']->sentiment = $result['sentiment']; // 'positive', 'negative', or 'neutral'
+        } else {
+            // Default value if title is missing
+            $data['row']->sentiment = 'unknown';
+        }
         return view(parent::loadDefaultDataToView($this->view_path . '.view'), compact('data'));
     }
     public function edit($id)

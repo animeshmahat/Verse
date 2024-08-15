@@ -26,7 +26,6 @@
 <div id="session-data" data-success="{{ session('success') }}" data-update-success="{{ session('update_success') }}" data-delete-success="{{ session('delete_success') }}">
 </div>
 
-<!-- DataTales Example -->
 <div class="card shadow mb-4">
     <div class="card-header">
         <h6 class="m-0 font-weight-bold text-primary">Category Table</h6>
@@ -72,7 +71,17 @@
                         </td>
                         <td>{{ $row->views }}</td>
                         <td>{{ $row->created_at->format('H:i.A D-m-d-Y') }} by <br> <strong>{{$row->user->name}}</strong> ({{$row->user->username}})</td>
-                        <td>#</td>
+                        <td>
+                            @if($row->sentiment === 'positive')
+                            <span class="badge rounded-pill badge-success">Positive</span>
+                            @elseif($row->sentiment === 'negative')
+                            <span class="badge rounded-pill badge-danger">Negative</span>
+                            @elseif($row->sentiment === 'neutral')
+                            <span class="badge rounded-pill badge-warning">Neutral</span>
+                            @else
+                            <span class="badge rounded-pill badge-secondary">Unknown</span>
+                            @endif
+                        </td>
                         <td>
                             @if($row->status == '1')
                             <span class="badge rounded-pill badge-success">Active</span>

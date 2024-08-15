@@ -44,10 +44,24 @@
                 <div class="d-flex flex-column">
                     <div class="mb-2">
                         <!-- title  -->
-                        <p><strong>TITLE :</strong>
+                        <p><strong>TITLE : </strong>
                         <h3 style="font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;">{{ $data['row']->title }}</h3>
                         </p>
                         <hr>
+                    </div>
+                    <!-- Sentiment -->
+                    <div class="mb-2">
+                        <p><strong>SENTIMENT :</strong>
+                            @if($data['row']->sentiment === 'positive')
+                            <span class="badge rounded-pill badge-success">Positive</span>
+                            @elseif($data['row']->sentiment === 'negative')
+                            <span class="badge rounded-pill badge-danger">Negative</span>
+                            @elseif($data['row']->sentiment === 'neutral')
+                            <span class="badge rounded-pill badge-warning">Neutral</span>
+                            @else
+                            <span class="badge rounded-pill badge-secondary">Unknown</span>
+                            @endif
+                        </p>
                     </div>
 
                     <!-- cat visitors status featured  -->
@@ -98,7 +112,6 @@
                                     @endforeach
                                 </p>
                             </div>
-
                         </div>
                     </div>
                 </div>
