@@ -62,6 +62,14 @@
         </a>
     </li>
 
+    <!-- comments -->
+    <li class="nav-item {{ Request::is('admin/comment*') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('admin.comment.index') }}">
+            <i class="fas fa-fw fa-comment"></i>
+            <span>Comments</span>
+        </a>
+    </li>
+
     <!-- settings  -->
     <li class="nav-item {{ Request::is('admin/setting*') ? 'active' : '' }}">
         <a class="nav-link" href="{{ route('admin.setting.index') }}">

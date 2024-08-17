@@ -37,6 +37,12 @@ Route::group(['prefix' => '/admin',             'as' => 'admin.', 'middleware' =
         Route::get('/delete/{id}',              [App\Http\Controllers\Admin\CategoryController::class, 'delete'])->name('delete');
     });
 
+    //Comment routes
+    Route::group(['prefix' => 'comment',        'as' => 'comment.'], function () {
+        Route::get('/',                         [App\Http\Controllers\Admin\CommentController::class, 'index'])->name('index');
+        Route::get('/view/{id}',                [App\Http\Controllers\Admin\CommentController::class, 'view'])->name('view');
+    });
+
     // Tags routes
     Route::group(['prefix' => 'tags', 'as' => 'tags.'], function () {
         Route::get('/',                            [App\Http\Controllers\Admin\TagController::class, 'index'])->name('index');

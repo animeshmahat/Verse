@@ -147,7 +147,7 @@
                             </form>
                             @endif
                             <div class="reply-form" id="reply-form-{{ $comment->id }}" style="display:none;">
-                                <form action="{{ route('site.comment.destroy', ['id' => $comment->id]) }}" method="POST" style="display:inline;">
+                                <form action="{{ route('site.comment.store', ['post_id' => $data['post']->id]) }}" method="POST">
                                     @csrf
                                     <input type="hidden" name="post_id" value="{{ $data['post']->id }}">
                                     <input type="hidden" name="parent_id" value="{{ $comment->id }}">
@@ -294,6 +294,7 @@
                 }
             });
         });
+        document.getElementById("defaultOpen").click();
     });
 </script>
 <script>
@@ -301,12 +302,6 @@
         $('#summarizeBtn').click(function() {
             $('#summarizeModal').modal('show');
         });
-
-        $('.reply-link').click(function() {
-            var commentId = $(this).data('comment-id');
-            $('#reply-form-' + commentId).toggle();
-        });
-
         document.getElementById("defaultOpen").click();
     });
 

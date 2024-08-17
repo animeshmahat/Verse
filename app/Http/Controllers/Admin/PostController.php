@@ -30,16 +30,22 @@ class PostController extends BaseController
 
         foreach ($posts as $post) {
             if ($post->title) {
-                // Send the title to the Flask API
-                $response = $client->post('http://127.0.0.1:5000/predict', [
-                    'json' => ['text' => $post->title]
-                ]);
+                try {
+                    // Send the title to the Flask API
+                    $response = $client->post('http://127.0.0.1:5000/predict', [
+                        'json' => ['text' => $post->title]
+                    ]);
 
-                // Get the sentiment from the API response
-                $result = json_decode($response->getBody(), true);
+                    // Get the sentiment from the API response
+                    $result = json_decode($response->getBody(), true);
 
-                // Attach the sentiment to the post object
-                $post->sentiment = $result['sentiment']; // 'positive', 'negative', or 'neutral'
+                    // Attach the sentiment to the post object
+                    $post->sentiment = $result['sentiment'] ?? 'unknown'; // 'positive', 'negative', or 'neutral'
+
+                } catch (\Exception $e) {
+                    // If the API call fails, set sentiment to 'unknown'
+                    $post->sentiment = 'unknown';
+                }
             } else {
                 // Default value if title is missing
                 $post->sentiment = 'unknown';
@@ -115,27 +121,34 @@ class PostController extends BaseController
             return redirect()->back()->withErrors(['tags' => 'Tag sync failed.'])->withInput();
         }
     }
-
     public function view(Request $request, $id)
     {
         $data['row'] = Posts::with(['user', 'category', 'tags'])->findOrFail($id);
+
         // Initialize Guzzle client
         $client = new Client();
 
         if (isset($data['row']->title)) {
-            // Send the title to the Flask API
-            $response = $client->post('http://127.0.0.1:5000/predict', [
-                'json' => ['text' => $data['row']->title]
-            ]);
+            try {
+                // Send the title to the Flask API
+                $response = $client->post('http://127.0.0.1:5000/predict', [
+                    'json' => ['text' => $data['row']->title]
+                ]);
 
-            // Get the sentiment from the API response
-            $result = json_decode($response->getBody(), true);
-            // Attach the sentiment to the post object
-            $data['row']->sentiment = $result['sentiment']; // 'positive', 'negative', or 'neutral'
+                // Get the sentiment from the API response
+                $result = json_decode($response->getBody(), true);
+
+                // Attach the sentiment to the post object
+                $data['row']->sentiment = $result['sentiment'] ?? 'unknown'; // 'positive', 'negative', or 'neutral'
+            } catch (\Exception $e) {
+                // If the API call fails, set sentiment to 'unknown'
+                $data['row']->sentiment = 'unknown';
+            }
         } else {
             // Default value if title is missing
             $data['row']->sentiment = 'unknown';
         }
+
         return view(parent::loadDefaultDataToView($this->view_path . '.view'), compact('data'));
     }
     public function edit($id)
