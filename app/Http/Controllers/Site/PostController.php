@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Site;
 use App\Http\Controllers\Admin\BaseController;
 use Illuminate\Http\Request;
 use App\Models\Posts;
+use Dotenv\Loader\Loader;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -14,7 +15,7 @@ class PostController extends BaseController
 {
     protected $base_route = "site.post.index";
     protected $view_path = "site.post";
-    protected $panel = "Blog";
+    protected $panel = "Verse";
     protected $model;
 
     public function __construct()
@@ -23,10 +24,29 @@ class PostController extends BaseController
     }
     public function index()
     {
-        $data['row'] = Posts::with(['user', 'category'])->where('user_id', Auth::id())->paginate('10');
+        $data['row'] = Posts::with(['user', 'category', 'likes', 'comments'])->where('user_id', Auth::id())->paginate('10');
         Paginator::useBootstrap();
         return view(parent::loadDefaultDataToView($this->view_path . '.index'), compact('data'));
     }
+    public function engagement()
+    {
+        $userId = Auth::id();
+
+        $mostViewedPost = Posts::where('user_id', $userId)->orderBy('views', 'desc')->first();
+        $mostLikedPost = Posts::where('user_id', $userId)->orderBy('likes_count', 'desc')->first();
+        $totalViews = Posts::where('user_id', $userId)->sum('views');
+        $totalPosts = Posts::where('user_id', $userId)->count();
+
+        // For Chart.js
+        $posts = Posts::where('user_id', $userId)
+            ->select('title', 'views', 'likes_count', 'thumbnail')
+            ->orderBy('views', 'desc')
+            ->take(5) // Display top 5 posts
+            ->get();
+
+        return view('site.post.engagement', compact('mostViewedPost', 'mostLikedPost', 'totalViews', 'totalPosts', 'posts'));
+    }
+
     public function write()
     {
         $category = $this->model->getCategory();

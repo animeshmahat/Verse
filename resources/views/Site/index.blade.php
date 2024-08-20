@@ -16,7 +16,7 @@
                 <!-- Switchable tabs -->
                 <ul class="nav nav-tabs" id="myTabs" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="for-you-tab" data-bs-toggle="tab" data-bs-target="#for-you" type="button" role="tab" aria-controls="for-you" aria-selected="true"><strong>For You</strong></button>
+                        <button class="nav-link active" id="for-you-tab" data-bs-toggle="tab" data-bs-target="#for-you" type="button" role="tab" aria-controls="for-you" aria-selected="true"><strong>Latest</strong></button>
                     </li>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="following-tab" data-bs-toggle="tab" data-bs-target="#following" type="button" role="tab" aria-controls="following" aria-selected="false"><strong>Following</strong></button>
@@ -25,7 +25,6 @@
 
                 <!-- Tab panes -->
                 <div class="tab-content" id="myTabContent">
-                    <!-- For You tab -->
                     <div class="tab-pane mt-2 fade show active" id="for-you" role="tabpanel" aria-labelledby="for-you-tab">
                         @if(isset($data['allPosts']) && $data['allPosts']->isNotEmpty())
                         @foreach($data['allPosts'] as $row)

@@ -32,22 +32,24 @@ class SiteController extends BaseController
     {
         $user = auth()->user();
 
-        // All posts for the "For You" tab
         $allPosts = Posts::where('status', 1)->orderBy('created_at', 'DESC')->get();
 
-        // Posts from users the current user is following for the "Following" tab
-        $followingPosts = Posts::where('status', 1)
-            ->whereIn('user_id', $user->followings()->pluck('followed_id'))
-            ->get();
+        $followingPosts = collect();
+        if ($user) {
+            $followingPosts = Posts::where('status', 1)
+                ->whereIn('user_id', $user->followings()->pluck('followed_id'))
+                ->get();
+        }
 
-        // Sidebar info 
-        $categories = Category::get();
+        // Sidebar info
         $categoriesWithMostPosts = Category::withCount(['posts' => function ($query) {
             $query->where('status', 1);
         }])->orderBy('posts_count', 'DESC')->get();
+
         $tagsWithMostPosts = Tags::withCount(['posts' => function ($query) {
             $query->where('status', 1);
         }])->orderBy('posts_count', 'DESC')->get();
+
         $popularPosts = Posts::orderBy('views', 'DESC')->take(7)->get();
         $trendingPosts = $this->postService->getTrendingPosts();
 

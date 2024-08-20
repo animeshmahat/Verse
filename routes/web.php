@@ -99,6 +99,7 @@ Route::group(['as' => 'site.',                  'namespace' => 'Site'], function
     // Protect comment routes with auth middleware
     Route::middleware(['auth'])->group(function () {
         Route::get('/write',                        [App\Http\Controllers\Site\PostController::class, 'write'])->name('write');
+        Route::get('/engagement',                   [App\Http\Controllers\Site\PostController::class, 'engagement'])->name('engagement');
         Route::post('/post/{post_id}/comment',      [App\Http\Controllers\Admin\CommentController::class, 'store'])->name('comment.store');
         Route::delete('/comment/{id}',              [App\Http\Controllers\Admin\CommentController::class, 'destroy'])->name('comment.destroy');
         Route::post('post/{postId}/like',           [App\Http\Controllers\Site\SiteController::class, 'likePost'])->name('post.like');

@@ -19,17 +19,19 @@
     <div class="container">
         <h1 class="h3 mb-2 text-gray-800">{{Auth()->user()->name}} Blogs</h1>
         <a href="{{ route('site.write') }}" class="btn btn-outline-dark btn-sm">Write New <i class="fa fa-pen-fancy fa-sm"></i></a>
+        <a href=" {{ route('site.engagement') }}" class="btn btn-outline-dark btn-sm">Engagement <i class="fa fa-chart-simple"></i></a>
         <div id="session-data" data-success="{{ session('success') }}" data-update-success="{{ session('update_success') }}" data-delete-success="{{ session('delete_success') }}">
         </div>
         <div class="table-responsive">
             <table class="table table-hover" id="dataTable" width="100%" cellspacing="0">
                 <thead>
-                    <tr>
+                    <tr class="text-center">
                         <th>S.N.</th>
                         <th>Title</th>
                         <th>Category</th>
                         <th>Thumbnail</th>
                         <th>Views</th>
+                        <th>Engagement</th>
                         <th>Status</th>
                         <th>Action</th>
                     </tr>
@@ -37,14 +39,15 @@
                 <tbody>
                     @if(isset($data['row']) && count($data['row']) != 0)
                     @foreach($data['row'] as $key => $row)
-                    <tr>
+                    <tr class="text-center">
                         <td>{{ $key + 1 }}</td>
                         <td>{{ $row->title }}</td>
                         <td>{{ $row->category->name }}</td>
                         <td>
                             <img src="{{ asset('uploads/post/'.$row->thumbnail) }}" alt="No Thumbnail" id="thumbnail">
                         </td>
-                        <td>{{ $row->views }}</td>
+                        <td><i class="fa fa-eye"></i> {{ $row->views }}</td>
+                        <td><i class="fa fa-thumbs-up"></i> {{$row->likes->count()}} | <i class="fa fa-comment"></i> {{$row->comments->count()}}</td>
                         <td>
                             @if ($row->status == '1')
                             <span class="text-success">ACTIVE</span>
