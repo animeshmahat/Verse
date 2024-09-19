@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Auth;
 class SiteController extends BaseController
 {
     protected $base_route = "site";
-    protected $view_path  = "site";
+    protected $view_path = "site";
     protected $panel = "Verse";
     protected $postService;
     protected $textRankService;
@@ -32,23 +32,27 @@ class SiteController extends BaseController
     {
         $user = auth()->user();
 
-        $allPosts = Posts::where('status', 1)->orderBy('created_at', 'DESC')->get();
+        $allPosts = Posts::where('status', 1)->orderBy('created_at', 'DESC')->paginate('10');
 
         $followingPosts = collect();
         if ($user) {
             $followingPosts = Posts::where('status', 1)
-                ->whereIn('user_id', $user->followings()->pluck('followed_id'))
-                ->get();
+                ->whereIn('user_id', $user->followings()->pluck('followed_id'))->paginate('10');
         }
+        Paginator::useBootstrap();
 
         // Sidebar info
-        $categoriesWithMostPosts = Category::withCount(['posts' => function ($query) {
-            $query->where('status', 1);
-        }])->orderBy('posts_count', 'DESC')->get();
+        $categoriesWithMostPosts = Category::withCount([
+            'posts' => function ($query) {
+                $query->where('status', 1);
+            }
+        ])->orderBy('posts_count', 'DESC')->get();
 
-        $tagsWithMostPosts = Tags::withCount(['posts' => function ($query) {
-            $query->where('status', 1);
-        }])->orderBy('posts_count', 'DESC')->get();
+        $tagsWithMostPosts = Tags::withCount([
+            'posts' => function ($query) {
+                $query->where('status', 1);
+            }
+        ])->orderBy('posts_count', 'DESC')->get();
 
         $popularPosts = Posts::orderBy('views', 'DESC')->take(7)->get();
         $trendingPosts = $this->postService->getTrendingPosts();
@@ -82,12 +86,16 @@ class SiteController extends BaseController
 
         // Sidebar info 
         $categories = Category::get();
-        $categoriesWithMostPosts = Category::withCount(['posts' => function ($query) {
-            $query->where('status', 1);
-        }])->orderBy('posts_count', 'DESC')->get();
-        $tagsWithMostPosts = Tags::withCount(['posts' => function ($query) {
-            $query->where('status', 1);
-        }])->orderBy('posts_count', 'DESC')->get();
+        $categoriesWithMostPosts = Category::withCount([
+            'posts' => function ($query) {
+                $query->where('status', 1);
+            }
+        ])->orderBy('posts_count', 'DESC')->get();
+        $tagsWithMostPosts = Tags::withCount([
+            'posts' => function ($query) {
+                $query->where('status', 1);
+            }
+        ])->orderBy('posts_count', 'DESC')->get();
         $popularPosts = Posts::orderBy('views', 'DESC')->take(7)->get();
         $trendingPosts = $this->postService->getTrendingPosts();
 
@@ -160,12 +168,16 @@ class SiteController extends BaseController
 
         // Sidebar info 
         $categories = Category::get();
-        $categoriesWithMostPosts = Category::withCount(['posts' => function ($query) {
-            $query->where('status', 1);
-        }])->orderBy('posts_count', 'DESC')->get();
-        $tagsWithMostPosts = Tags::withCount(['posts' => function ($query) {
-            $query->where('status', 1);
-        }])->orderBy('posts_count', 'DESC')->get();
+        $categoriesWithMostPosts = Category::withCount([
+            'posts' => function ($query) {
+                $query->where('status', 1);
+            }
+        ])->orderBy('posts_count', 'DESC')->get();
+        $tagsWithMostPosts = Tags::withCount([
+            'posts' => function ($query) {
+                $query->where('status', 1);
+            }
+        ])->orderBy('posts_count', 'DESC')->get();
         $popularPosts = Posts::orderBy('views', 'DESC')->take(7)->get();
         $trendingPosts = $this->postService->getTrendingPosts();
 
@@ -200,12 +212,16 @@ class SiteController extends BaseController
 
         // Sidebar info 
         $categories = Category::get();
-        $categoriesWithMostPosts = Category::withCount(['posts' => function ($query) {
-            $query->where('status', 1);
-        }])->orderBy('posts_count', 'DESC')->get();
-        $tagsWithMostPosts = Tags::withCount(['posts' => function ($query) {
-            $query->where('status', 1);
-        }])->orderBy('posts_count', 'DESC')->get();
+        $categoriesWithMostPosts = Category::withCount([
+            'posts' => function ($query) {
+                $query->where('status', 1);
+            }
+        ])->orderBy('posts_count', 'DESC')->get();
+        $tagsWithMostPosts = Tags::withCount([
+            'posts' => function ($query) {
+                $query->where('status', 1);
+            }
+        ])->orderBy('posts_count', 'DESC')->get();
         $popularPosts = Posts::orderBy('views', 'DESC')->take(7)->get();
         $trendingPosts = $this->postService->getTrendingPosts();
 

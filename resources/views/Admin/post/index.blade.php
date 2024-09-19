@@ -20,10 +20,12 @@
 <!-- Page Heading -->
 <h1 class="h3 mb-2 text-gray-800">Blog Posts</h1>
 
-<a href="{{ route('admin.post.create') }}" class="btn btn-sm btn-success mb-2"><i class="fa fa-plus"></i> Add {{$_panel}}</a>
+<a href="{{ route('admin.post.create') }}" class="btn btn-sm btn-success mb-2"><i class="fa fa-plus"></i> Add
+    {{$_panel}}</a>
 
 <!-- Hidden element to pass session data to JavaScript -->
-<div id="session-data" data-success="{{ session('success') }}" data-update-success="{{ session('update_success') }}" data-delete-success="{{ session('delete_success') }}">
+<div id="session-data" data-success="{{ session('success') }}" data-update-success="{{ session('update_success') }}"
+    data-delete-success="{{ session('delete_success') }}">
 </div>
 
 <div class="card shadow mb-4">
@@ -41,7 +43,6 @@
                         <th>Thumbnail</th>
                         <th>Views</th>
                         <th>Posted On & By</th>
-                        <th>Sentiment</th>
                         <th>Status</th>
                         <th>Action</th>
                     </tr>
@@ -54,56 +55,53 @@
                         <th>Thumbnail</th>
                         <th>Views</th>
                         <th>Posted On & By</th>
-                        <th>Sentiment</th>
                         <th>Status</th>
                         <th>Action</th>
                     </tr>
                 </tfoot>
                 <tbody>
                     @if(isset($data['row']) && count($data['row']) != 0)
-                    @foreach($data['row'] as $key=>$row)
-                    <tr>
-                        <td>{{ $key+1 }}</td>
-                        <td>{{ $row->title }}</td>
-                        <td>{{ $row->category->name }}</td>
-                        <td>
-                            <img src="{{ asset('/uploads/post/' . $row->thumbnail) }}" alt="thumbnail" id="thumbnail">
-                        </td>
-                        <td>{{ $row->views }}</td>
-                        <td>{{ $row->created_at->format('H:i.A D-m-d-Y') }} by <br> <strong>{{$row->user->name}}</strong> ({{$row->user->username}})</td>
-                        <td>
-                            @if($row->sentiment === 'positive')
-                            <span class="badge rounded-pill badge-success">Positive</span>
-                            @elseif($row->sentiment === 'negative')
-                            <span class="badge rounded-pill badge-danger">Negative</span>
-                            @elseif($row->sentiment === 'neutral')
-                            <span class="badge rounded-pill badge-warning">Neutral</span>
-                            @else
-                            <span class="badge rounded-pill badge-secondary">Unknown</span>
-                            @endif
-                        </td>
-                        <td>
-                            @if($row->status == '1')
-                            <span class="badge rounded-pill badge-success">Active</span>
-                            @elseif($row->status == '0')
-                            <span class="badge rounded-pill badge-danger">InActive</span>
-                            @endif
-                        </td>
-                        <td>
-                            <div class="d-flex flex-row align-items-center">
-                                <a href="{{ route('admin.post.view', ['id' => $row->id]) }}" class="btn-circle btn-primary m-1"><i class="fa fa-eye" aria-hidden="true"></i></a>
-                                @if (Auth::id() === $row->user_id)
-                                <a href="{{ route('admin.post.edit', ['id' => $row->id]) }}" class="btn-circle btn-warning m-1"><i class="fa fa-pen" aria-hidden="true"></i></a>
-                                <a href="{{ route('admin.post.delete', ['id' => $row->id]) }}" class="btn-circle btn-danger m-1" onclick="return confirm('Permanently delete this record?')"><i class="fa fa-trash" aria-hidden="true"></i></a>
-                                @elseif (Auth::user()->role === 'superadmin')
-                                <a href="{{ route('admin.post.delete', ['id' => $row->id]) }}" class="btn-circle btn-danger m-1" onclick="return confirm('Permanently delete this record?')"><i class="fa fa-trash" aria-hidden="true"></i></a>
-                                @endif
-                            </div>
-                        </td>
-                    </tr>
-                    @endforeach
+                        @foreach($data['row'] as $key => $row)
+                            <tr>
+                                <td>{{ $key + 1 }}</td>
+                                <td>{{ $row->title }}</td>
+                                <td>{{ $row->category->name }}</td>
+                                <td>
+                                    <img src="{{ asset('/uploads/post/' . $row->thumbnail) }}" alt="thumbnail" id="thumbnail">
+                                </td>
+                                <td>{{ $row->views }}</td>
+                                <td>{{ $row->created_at->format('H:i.A D-m-d-Y') }} by <br>
+                                    <strong>{{$row->user->name}}</strong> ({{$row->user->username}})</td>
+                                <td>
+                                    @if($row->status == '1')
+                                        <span class="badge rounded-pill badge-success">Active</span>
+                                    @elseif($row->status == '0')
+                                        <span class="badge rounded-pill badge-danger">InActive</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-row align-items-center">
+                                        <a href="{{ route('admin.post.view', ['id' => $row->id]) }}"
+                                            class="btn-circle btn-primary m-1"><i class="fa fa-eye" aria-hidden="true"></i></a>
+                                        @if (Auth::id() === $row->user_id)
+                                            <a href="{{ route('admin.post.edit', ['id' => $row->id]) }}"
+                                                class="btn-circle btn-warning m-1"><i class="fa fa-pen" aria-hidden="true"></i></a>
+                                            <a href="{{ route('admin.post.delete', ['id' => $row->id]) }}"
+                                                class="btn-circle btn-danger m-1"
+                                                onclick="return confirm('Permanently delete this record?')"><i class="fa fa-trash"
+                                                    aria-hidden="true"></i></a>
+                                        @elseif (Auth::user()->role === 'superadmin')
+                                            <a href="{{ route('admin.post.delete', ['id' => $row->id]) }}"
+                                                class="btn-circle btn-danger m-1"
+                                                onclick="return confirm('Permanently delete this record?')"><i class="fa fa-trash"
+                                                    aria-hidden="true"></i></a>
+                                        @endif
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
                     @elseif(count($data['row']) == 0)
-                    <h3>No records found.</h3>
+                        <h3>No records found.</h3>
                     @endif
                 </tbody>
             </table>
@@ -114,7 +112,7 @@
 
 @section('js')
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const sessionData = document.getElementById('session-data');
         const successMessage = sessionData.getAttribute('data-success');
         const updateSuccessMessage = sessionData.getAttribute('data-update-success');

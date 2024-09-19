@@ -24,34 +24,6 @@ class PostController extends BaseController
     public function index()
     {
         $posts = Posts::with(['user', 'category'])->get();
-
-        // Initialize Guzzle client
-        $client = new Client();
-
-        foreach ($posts as $post) {
-            if ($post->title) {
-                try {
-                    // Send the title to the Flask API
-                    $response = $client->post('http://127.0.0.1:5000/predict', [
-                        'json' => ['text' => $post->title]
-                    ]);
-
-                    // Get the sentiment from the API response
-                    $result = json_decode($response->getBody(), true);
-
-                    // Attach the sentiment to the post object
-                    $post->sentiment = $result['sentiment'] ?? 'unknown'; // 'positive', 'negative', or 'neutral'
-
-                } catch (\Exception $e) {
-                    // If the API call fails, set sentiment to 'unknown'
-                    $post->sentiment = 'unknown';
-                }
-            } else {
-                // Default value if title is missing
-                $post->sentiment = 'unknown';
-            }
-        }
-
         $data['row'] = $posts;
         return view(parent::loadDefaultDataToView($this->view_path . '.index'), compact('data'));
     }
@@ -124,30 +96,6 @@ class PostController extends BaseController
     public function view(Request $request, $id)
     {
         $data['row'] = Posts::with(['user', 'category', 'tags'])->findOrFail($id);
-
-        // Initialize Guzzle client
-        $client = new Client();
-
-        if (isset($data['row']->title)) {
-            try {
-                // Send the title to the Flask API
-                $response = $client->post('http://127.0.0.1:5000/predict', [
-                    'json' => ['text' => $data['row']->title]
-                ]);
-
-                // Get the sentiment from the API response
-                $result = json_decode($response->getBody(), true);
-
-                // Attach the sentiment to the post object
-                $data['row']->sentiment = $result['sentiment'] ?? 'unknown'; // 'positive', 'negative', or 'neutral'
-            } catch (\Exception $e) {
-                // If the API call fails, set sentiment to 'unknown'
-                $data['row']->sentiment = 'unknown';
-            }
-        } else {
-            // Default value if title is missing
-            $data['row']->sentiment = 'unknown';
-        }
 
         return view(parent::loadDefaultDataToView($this->view_path . '.view'), compact('data'));
     }

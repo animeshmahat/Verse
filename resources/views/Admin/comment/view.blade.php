@@ -24,49 +24,56 @@
                 <h5>Comments</h5>
                 <hr>
                 @forelse($data['row']->comments as $comment)
-                <div class="mb-3">
-                    <div class="d-flex align-items-start">
-                        <!-- User profile picture -->
-                        <img src="{{asset('uploads/user_image/' . $comment->user->image) }}" alt="{{ $comment->user->name }}" class="rounded-circle me-2" style="width: 30px; height: 30px; object-fit:contain;">
-                        <div>
-                            <strong>{{ $comment->user->name }}:</strong>
-                            <p>{{ $comment->comment }}</p>
-                            <span class="badge rounded-pill 
-                                    @if($comment->sentiment === 'positive') badge-success 
-                                    @elseif($comment->sentiment === 'negative') badge-danger 
-                                    @elseif($comment->sentiment === 'neutral') badge-warning 
-                                    @else badge-secondary @endif">
-                                {{ ucfirst($comment->sentiment) }}
-                            </span>
-                        </div>
-                    </div>
-                    <hr>
-                    <!-- Display replies -->
-                    @if($comment->replies->isNotEmpty())
-                    <div class="ms-4 mt-4">
-                        @foreach($comment->replies as $reply)
-                        <div class="mb-2 d-flex align-items-start">
-                            <!-- User profile picture for reply -->
-                            <img src="{{asset('uploads/user_image/' . $reply->user->image) }}" alt="{{ $reply->user->name }}" class="rounded-circle me-2" style="width: 30px; height: 30px; object-fit:contain;">
-                            <div>
-                                <strong>{{ $reply->user->name }} (Reply):</strong>
-                                <p>{{ $reply->comment }}</p>
-                                <span class="badge rounded-pill 
-                                                @if($reply->sentiment === 'positive') badge-success 
-                                                @elseif($reply->sentiment === 'negative') badge-danger 
-                                                @elseif($reply->sentiment === 'neutral') badge-warning 
-                                                @else badge-secondary @endif">
-                                    {{ ucfirst($reply->sentiment) }}
-                                </span>
+                    <!-- Check if the comment is not a reply -->
+                    @if(is_null($comment->parent_id))
+                        <div class="mb-3">
+                            <div class="d-flex align-items-start">
+                                <!-- User profile picture -->
+                                <img src="{{asset('uploads/user_image/' . $comment->user->image) }}"
+                                    alt="{{ $comment->user->name }}" class="rounded-circle me-2"
+                                    style="width: 30px; height: 30px; object-fit:contain;">
+                                <div>
+                                    <strong>{{ $comment->user->name }}:</strong>
+                                    <p>{{ $comment->comment }}</p>
+                                    <span class="badge rounded-pill 
+                                            @if($comment->sentiment === 'positive') badge-success 
+                                            @elseif($comment->sentiment === 'negative') badge-danger 
+                                            @elseif($comment->sentiment === 'neutral') badge-warning 
+                                            @else badge-secondary @endif">
+                                        {{ ucfirst($comment->sentiment) }}
+                                    </span>
+                                </div>
                             </div>
+                            <hr>
+                            <!-- Display replies -->
+                            @if($comment->replies->isNotEmpty())
+                                <div class="ms-4 mt-4">
+                                    @foreach($comment->replies as $reply)
+                                        <div class="mb-2 d-flex align-items-start">
+                                            <!-- User profile picture for reply -->
+                                            <img src="{{asset('uploads/user_image/' . $reply->user->image) }}"
+                                                alt="{{ $reply->user->name }}" class="rounded-circle me-2"
+                                                style="width: 30px; height: 30px; object-fit:contain;">
+                                            <div>
+                                                <strong>{{ $reply->user->name }} (Reply):</strong>
+                                                <p>{{ $reply->comment }}</p>
+                                                <span class="badge rounded-pill 
+                                                                @if($reply->sentiment === 'positive') badge-success 
+                                                                @elseif($reply->sentiment === 'negative') badge-danger 
+                                                                @elseif($reply->sentiment === 'neutral') badge-warning 
+                                                                @else badge-secondary @endif">
+                                                    {{ ucfirst($reply->sentiment) }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                                <hr>
+                            @endif
                         </div>
-                        @endforeach
-                    </div>
-                    <hr>
                     @endif
-                </div>
                 @empty
-                <p>No comments found.</p>
+                    <p>No comments found.</p>
                 @endforelse
             </div>
         </div>
