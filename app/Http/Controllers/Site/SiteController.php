@@ -33,29 +33,41 @@ class SiteController extends BaseController
     {
         $user = auth()->user();
 
-        $allPosts = Posts::where('status', 1)->orderBy('created_at', 'DESC')->paginate('10');
+        $allPosts = Posts::where('status', 1)
+            ->whereHas('user', function ($query) {
+                $query->where('status', 1); // Ensure user status is 1
+            })
+            ->orderBy('created_at', 'DESC')
+            ->paginate(10);
 
         $followingPosts = collect();
         if ($user) {
-            $followingPosts = Posts::where('status', 1)
-                ->whereIn('user_id', $user->followings()->pluck('followed_id'))->paginate('10');
+            $followingPosts = Posts::where('status', 1)->whereHas('user', function ($query) {
+                $query->where('status', 1); // Ensure user status is 1
+            })->whereIn('user_id', $user->followings()->pluck('followed_id'))->paginate('10');
         }
         Paginator::useBootstrap();
 
         // Sidebar info
         $categoriesWithMostPosts = Category::withCount([
             'posts' => function ($query) {
-                $query->where('status', 1);
+                $query->where('status', 1)->whereHas('user', function ($query) {
+                    $query->where('status', 1); // Ensure user status is 1
+                });
             }
         ])->orderBy('posts_count', 'DESC')->get();
 
         $tagsWithMostPosts = Tags::withCount([
             'posts' => function ($query) {
-                $query->where('status', 1);
+                $query->where('status', 1)->whereHas('user', function ($query) {
+                    $query->where('status', 1); // Ensure user status is 1
+                });
             }
         ])->orderBy('posts_count', 'DESC')->get();
 
-        $popularPosts = Posts::orderBy('views', 'DESC')->take(7)->get();
+        $popularPosts = Posts::orderBy('views', 'DESC')->whereHas('user', function ($query) {
+            $query->where('status', 1); // Ensure user status is 1
+        })->take(7)->get();
         $trendingPosts = $this->postService->getTrendingPosts();
 
         $data = [
@@ -69,35 +81,47 @@ class SiteController extends BaseController
 
         return view(parent::loadDefaultDataToView($this->view_path . '.index'), compact('data'));
     }
-
     public function search(Request $request)
     {
         $search = $request->input('search');
-        $results = Posts::where('title', 'like', "%$search%")
-            ->orWhereHas('category', function ($query) use ($search) {
-                $query->where('name', 'like', "%$search%");
+
+        $results = Posts::where('status', 1) // Ensure post status is 1
+            ->whereHas('user', function ($query) {
+                $query->where('status', 1); // Ensure user status is 1
             })
-            ->orWhereHas('tags', function ($query) use ($search) {
-                $query->where('name', 'like', "%$search%");
+            ->where(function ($query) use ($search) {
+                // Apply the search conditions within a nested query
+                $query->where('title', 'like', "%$search%")
+                    ->orWhereHas('category', function ($query) use ($search) {
+                    $query->where('name', 'like', "%$search%");
+                })
+                    ->orWhereHas('tags', function ($query) use ($search) {
+                    $query->where('name', 'like', "%$search%");
+                });
             })
-            ->where('status', 1)
             ->orderBy('views', 'DESC')
-            ->paginate('10');
+            ->paginate(10);
+
         Paginator::useBootstrap();
 
-        // Sidebar info 
-        $categories = Category::get();
+        // Sidebar info
         $categoriesWithMostPosts = Category::withCount([
             'posts' => function ($query) {
-                $query->where('status', 1);
+                $query->where('status', 1); // Only count posts with status 1
             }
         ])->orderBy('posts_count', 'DESC')->get();
+
         $tagsWithMostPosts = Tags::withCount([
             'posts' => function ($query) {
-                $query->where('status', 1);
+                $query->where('status', 1); // Only count posts with status 1
             }
         ])->orderBy('posts_count', 'DESC')->get();
-        $popularPosts = Posts::orderBy('views', 'DESC')->take(7)->get();
+
+        $popularPosts = Posts::where('status', 1) // Ensure popular posts have status 1
+            ->orderBy('views', 'DESC')
+            ->take(7)
+            ->get();
+
         $trendingPosts = $this->postService->getTrendingPosts();
 
         $data = [
@@ -106,13 +130,16 @@ class SiteController extends BaseController
             'popularPosts' => $popularPosts,
             'trendingPosts' => $trendingPosts,
         ];
-        return view(parent::loadDefaultDataToView($this->view_path . '.search'), compact('data'), ['results' => $results, 'search' => $search,]);
+
+        return view(parent::loadDefaultDataToView($this->view_path . '.search'), compact('data'), ['results' => $results, 'search' => $search]);
     }
     public function autocomplete(Request $request)
     {
         $search = $request->input('search');
         $suggestions = Posts::where('title', 'like', "%$search%")
-            ->where('status', 1)
+            ->where('status', 1)->whereHas('user', function ($query) {
+                $query->where('status', 1); // Ensure user status is 1
+            })
             ->orderByRaw("CASE 
                             WHEN title LIKE ? THEN 1
                             ELSE 2
@@ -172,15 +199,21 @@ class SiteController extends BaseController
         $categories = Category::get();
         $categoriesWithMostPosts = Category::withCount([
             'posts' => function ($query) {
-                $query->where('status', 1);
+                $query->where('status', 1)->whereHas('user', function ($query) {
+                    $query->where('status', 1); // Ensure user status is 1
+                });
             }
         ])->orderBy('posts_count', 'DESC')->get();
         $tagsWithMostPosts = Tags::withCount([
             'posts' => function ($query) {
-                $query->where('status', 1);
+                $query->where('status', 1)->whereHas('user', function ($query) {
+                    $query->where('status', 1); // Ensure user status is 1
+                });
             }
         ])->orderBy('posts_count', 'DESC')->get();
-        $popularPosts = Posts::orderBy('views', 'DESC')->take(7)->get();
+        $popularPosts = Posts::orderBy('views', 'DESC')->whereHas('user', function ($query) {
+            $query->where('status', 1); // Ensure user status is 1
+        })->take(7)->get();
         $trendingPosts = $this->postService->getTrendingPosts();
 
         // Summary
@@ -247,22 +280,30 @@ class SiteController extends BaseController
     {
         $category = Category::where('name', $name)->firstOrFail();
         $category_id = $category->id;
-        $post = Posts::where('category_id', $category_id)->where('status', 1)->paginate('10');
+        $post = Posts::where('category_id', $category_id)->whereHas('user', function ($query) {
+            $query->where('status', 1); // Ensure user status is 1
+        })->where('status', 1)->paginate('10');
         Paginator::useBootstrap();
 
         // Sidebar info 
         $categories = Category::get();
         $categoriesWithMostPosts = Category::withCount([
             'posts' => function ($query) {
-                $query->where('status', 1);
+                $query->where('status', 1)->whereHas('user', function ($query) {
+                    $query->where('status', 1); // Ensure user status is 1
+                });
             }
         ])->orderBy('posts_count', 'DESC')->get();
         $tagsWithMostPosts = Tags::withCount([
             'posts' => function ($query) {
-                $query->where('status', 1);
+                $query->where('status', 1)->whereHas('user', function ($query) {
+                    $query->where('status', 1); // Ensure user status is 1
+                });
             }
         ])->orderBy('posts_count', 'DESC')->get();
-        $popularPosts = Posts::orderBy('views', 'DESC')->take(7)->get();
+        $popularPosts = Posts::orderBy('views', 'DESC')->whereHas('user', function ($query) {
+            $query->where('status', 1); // Ensure user status is 1
+        })->take(7)->get();
         $trendingPosts = $this->postService->getTrendingPosts();
 
         $data = [

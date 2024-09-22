@@ -83,7 +83,6 @@
     <script src="{{asset('assets/Site/vendor/swiper/swiper-bundle.min.js')}}"></script>
     <script src="{{asset('assets/Site/vendor/glightbox/js/glightbox.min.js')}}"></script>
     <script src="{{asset('assets/Site/vendor/aos/aos.js')}}"></script>
-    <script src="{{asset('assets/Site/vandor/php-email-form/validate.js')}}"></script>
 
     <!-- Template Main JS File -->
     <script src="{{asset('assets/Site/js/main.js')}}"></script>
