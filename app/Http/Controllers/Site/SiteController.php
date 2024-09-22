@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Site;
 use App\Http\Controllers\Admin\BaseController;
 use App\Models\Category;
 use App\Models\Comments;
+use GuzzleHttp\Client;
 use App\Models\Likes;
 use App\Models\Posts;
 use App\Models\PostView;
@@ -181,12 +182,40 @@ class SiteController extends BaseController
         $popularPosts = Posts::orderBy('views', 'DESC')->take(7)->get();
         $trendingPosts = $this->postService->getTrendingPosts();
 
-        //summary
+        // Summary
+        // Default summary from TextRankService
         $summaries = $this->textRankService->summarizeText($post->title, $post->description);
 
-        // Calculate reading time (words per minute)
+        // Try calling Flask API for summarization
+        try {
+            $apiUrl = "http://localhost:5000/summarize"; // Flask API URL
+            $client = new Client([
+                'timeout' => 60, // seconds
+                'verify' => false, // Disable SSL verification if necessary
+            ]);
+
+            $response = $client->post($apiUrl, [
+                'json' => [
+                    'title' => $post->title,
+                    'description' => $post->description
+                ]
+            ]);
+
+            if ($response->getStatusCode() == 200) {
+                $apiSummary = json_decode($response->getBody(), true);
+                if (isset($apiSummary['paragraph']) && isset($apiSummary['bullet_points'])) {
+                    $summaries['paragraph'] = $apiSummary['paragraph'];
+                    $summaries['bullet_points'] = $apiSummary['bullet_points'];
+                }
+            }
+        } catch (\Exception $e) {
+            \Log::error('Error calling Flask API: ' . $e->getMessage());
+            // Optionally, you can set default summaries or handle the error as needed
+        }
+
+        // Calculate reading time
         $wordCount = str_word_count(strip_tags($post->description));
-        $readingTime = ceil($wordCount / 238); // Assuming 238 words per minute
+        $readingTime = ceil($wordCount / 200); // Assuming 200 words per minute
 
         $data = [
             'post' => $post,
