@@ -24,34 +24,47 @@ class CommentController extends BaseController
         // Initialize Guzzle client
         $client = new Client();
 
+        // Retrieve cached sentiment data from session
+        $cachedSentiments = session()->get('sentiment_data', []);
+
         foreach ($posts as $post) {
+            $postId = $post->id;
             $positiveCount = 0;
             $negativeCount = 0;
             $neutralCount = 0;
 
-            // Iterate through each comment related to the post
             foreach ($post->comments as $comment) {
-                try {
-                    // Send the comment text to the Flask API
-                    $response = $client->post('http://127.0.0.1:5000/predict', [
-                        'json' => ['text' => $comment->comment]
-                    ]);
+                $commentId = $comment->id;
 
-                    // Get the sentiment from the API response
-                    $result = json_decode($response->getBody(), true);
-                    $sentiment = $result['sentiment'] ?? 'unknown'; // 'positive', 'negative', or 'neutral'
+                // Check if sentiment for this comment is already cached
+                if (isset($cachedSentiments[$postId][$commentId])) {
+                    $sentiment = $cachedSentiments[$postId][$commentId];
+                } else {
+                    try {
+                        // Send the comment text to the Flask API
+                        $response = $client->post('http://127.0.0.1:5000/predict', [
+                            'json' => ['text' => $comment->comment]
+                        ]);
 
-                    // Count sentiments
-                    if ($sentiment === 'positive') {
-                        $positiveCount++;
-                    } elseif ($sentiment === 'negative') {
-                        $negativeCount++;
-                    } elseif ($sentiment === 'neutral') {
-                        $neutralCount++;
+                        // Get the sentiment from the API response
+                        $result = json_decode($response->getBody(), true);
+                        $sentiment = $result['sentiment'] ?? 'unknown'; // 'positive', 'negative', or 'neutral'
+
+                        // Cache the sentiment result in the session
+                        $cachedSentiments[$postId][$commentId] = $sentiment;
+                    } catch (\Exception $e) {
+                        // Handle API errors gracefully
+                        $sentiment = 'unknown';
                     }
-                } catch (\Exception $e) {
-                    // Handle API errors gracefully
-                    $sentiment = 'unknown';
+                }
+
+                // Count sentiments
+                if ($sentiment === 'positive') {
+                    $positiveCount++;
+                } elseif ($sentiment === 'negative') {
+                    $negativeCount++;
+                } elseif ($sentiment === 'neutral') {
+                    $neutralCount++;
                 }
             }
 
@@ -62,49 +75,83 @@ class CommentController extends BaseController
             $post->neutral_count = $neutralCount;
         }
 
+        // Store updated sentiment data in the session
+        session()->put('sentiment_data', $cachedSentiments);
+
         $data['row'] = $posts;
         return view(parent::loadDefaultDataToView($this->view_path . '.index'), compact('data'));
     }
     public function view(Request $request, $id)
     {
         // Fetch all comments related to the post, including their replies
-        $data['row'] = Posts::with(['comments' => function ($query) {
-            $query->with('user', 'replies.user');
-        }])->findOrFail($id);
+        $data['row'] = Posts::with([
+            'comments' => function ($query) {
+                $query->with('user', 'replies.user');
+            }
+        ])->findOrFail($id);
 
         // Initialize Guzzle client
         $client = new Client();
 
+        // Retrieve cached sentiment data from session
+        $cachedSentiments = session()->get('sentiment_data', []);
+
         // Analyze sentiment for each comment
         foreach ($data['row']->comments as $comment) {
-            try {
-                $response = $client->post('http://127.0.0.1:5000/predict', [
-                    'json' => ['text' => $comment->comment]
-                ]);
+            $commentId = $comment->id;
 
-                $result = json_decode($response->getBody(), true);
-                $comment->sentiment = $result['sentiment'] ?? 'unknown';
-            } catch (\Exception $e) {
-                $comment->sentiment = 'unknown';
+            // Check if the sentiment for the comment is cached
+            if (isset($cachedSentiments[$commentId])) {
+                $comment->sentiment = $cachedSentiments[$commentId];
+            } else {
+                try {
+                    // Call Flask API for sentiment analysis
+                    $response = $client->post('http://127.0.0.1:5000/predict', [
+                        'json' => ['text' => $comment->comment]
+                    ]);
+
+                    $result = json_decode($response->getBody(), true);
+                    $comment->sentiment = $result['sentiment'] ?? 'unknown';
+
+                    // Cache the sentiment result
+                    $cachedSentiments[$commentId] = $comment->sentiment;
+                } catch (\Exception $e) {
+                    $comment->sentiment = 'unknown';
+                }
             }
 
             // Analyze sentiment for each reply
             foreach ($comment->replies as $reply) {
-                try {
-                    $response = $client->post('http://127.0.0.1:5000/predict', [
-                        'json' => ['text' => $reply->comment]
-                    ]);
+                $replyId = $reply->id;
 
-                    $result = json_decode($response->getBody(), true);
-                    $reply->sentiment = $result['sentiment'] ?? 'unknown';
-                } catch (\Exception $e) {
-                    $reply->sentiment = 'unknown';
+                // Check if the sentiment for the reply is cached
+                if (isset($cachedSentiments[$replyId])) {
+                    $reply->sentiment = $cachedSentiments[$replyId];
+                } else {
+                    try {
+                        // Call Flask API for sentiment analysis of the reply
+                        $response = $client->post('http://127.0.0.1:5000/predict', [
+                            'json' => ['text' => $reply->comment]
+                        ]);
+
+                        $result = json_decode($response->getBody(), true);
+                        $reply->sentiment = $result['sentiment'] ?? 'unknown';
+
+                        // Cache the sentiment result
+                        $cachedSentiments[$replyId] = $reply->sentiment;
+                    } catch (\Exception $e) {
+                        $reply->sentiment = 'unknown';
+                    }
                 }
             }
         }
 
+        // Store updated sentiment data in session
+        session()->put('sentiment_data', $cachedSentiments);
+
         return view(parent::loadDefaultDataToView($this->view_path . '.view'), compact('data'));
     }
+
     public function store(Request $request)
     {
         $request->validate([

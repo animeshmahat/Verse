@@ -29,7 +29,7 @@ class Posts extends Model
         return validator($validate, [
             'category_id' => 'required',
             'title' => 'required|string|min:2|max:100',
-            'description' => 'required|string',
+            'description' => 'required|string|min:200',
             'status' => 'nullable|boolean',
             'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:10000',
             'tags' => 'array',

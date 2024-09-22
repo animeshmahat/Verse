@@ -15,7 +15,7 @@ class PostController extends BaseController
 {
     protected $base_route = "site.post.index";
     protected $view_path = "site.post";
-    protected $panel = "Verse";
+    protected $panel = "Blog";
     protected $model;
 
     public function __construct()

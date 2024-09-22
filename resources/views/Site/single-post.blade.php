@@ -30,6 +30,19 @@
         display: none;
         padding: 6px 12px;
         border-top: none;
+        text-align: justify;
+    }
+
+    .modal-body {
+        max-height: 400px;
+        overflow-y: auto;
+        /* Enables vertical scrolling */
+    }
+
+    .modal-dialog {
+        max-width: 500px;
+        margin: 30px auto;
+        /* Centers the modal with spacing from the top */
     }
 </style>
 @endsection
@@ -56,7 +69,8 @@
                             {{ $data['post']->updated_at->format('H:i A') }}</span>
                         <span>
                             <button class="btn btn-sm btn-outline-dark" id="summarizeBtn"
-                                style="font-family:'Times New Roman', Times, serif;">SUMMARIZE</button>
+                                style="font-family:'Times New Roman', Times, serif;"><i class="fa-solid fa-wand-magic"></i>
+                                SUMMARIZE</button>
                         </span>
                     @endif
                     <h1 class="mb-5">{{ $data['post']->title }}</h1>

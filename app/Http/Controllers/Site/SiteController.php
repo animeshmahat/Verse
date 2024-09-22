@@ -127,8 +127,9 @@ class SiteController extends BaseController
         $post = Posts::where('slug', $slug)->firstOrFail();
         $post_id = $post->id;
 
-        // Get viewed posts data from the session
+        // Get viewed posts and summaries data from the session
         $viewedPosts = session()->get('viewed_posts', []);
+        $summarizedPosts = session()->get('summarized_posts', []);
 
         // Check if the post has been viewed in the session
         if (isset($viewedPosts[$post_id])) {
@@ -183,34 +184,43 @@ class SiteController extends BaseController
         $trendingPosts = $this->postService->getTrendingPosts();
 
         // Summary
-        // Default summary from TextRankService
-        $summaries = $this->textRankService->summarizeText($post->title, $post->description);
+        $summaries = [];
+        if (isset($summarizedPosts[$post_id])) {
+            // Retrieve cached summary from session
+            $summaries = $summarizedPosts[$post_id];
+        } else {
+            // Default summary from TextRankService
+            $summaries = $this->textRankService->summarizeText($post->title, $post->description);
 
-        // Try calling Flask API for summarization
-        try {
-            $apiUrl = "http://localhost:5000/summarize"; // Flask API URL
-            $client = new Client([
-                'timeout' => 60, // seconds
-                'verify' => false, // Disable SSL verification if necessary
-            ]);
+            // Try calling Flask API for summarization
+            try {
+                $apiUrl = "http://localhost:5000/summarize"; // Flask API URL
+                $client = new Client([
+                    'timeout' => 500, // seconds
+                    'verify' => false, // Disable SSL verification if necessary
+                ]);
 
-            $response = $client->post($apiUrl, [
-                'json' => [
-                    'title' => $post->title,
-                    'description' => $post->description
-                ]
-            ]);
+                $response = $client->post($apiUrl, [
+                    'json' => [
+                        'title' => $post->title,
+                        'description' => $post->description
+                    ]
+                ]);
 
-            if ($response->getStatusCode() == 200) {
-                $apiSummary = json_decode($response->getBody(), true);
-                if (isset($apiSummary['paragraph']) && isset($apiSummary['bullet_points'])) {
-                    $summaries['paragraph'] = $apiSummary['paragraph'];
-                    $summaries['bullet_points'] = $apiSummary['bullet_points'];
+                if ($response->getStatusCode() == 200) {
+                    $apiSummary = json_decode($response->getBody(), true);
+                    if (isset($apiSummary['paragraph']) && isset($apiSummary['bullet_points'])) {
+                        $summaries['paragraph'] = $apiSummary['paragraph'];
+                        $summaries['bullet_points'] = $apiSummary['bullet_points'];
+                    }
                 }
+            } catch (\Exception $e) {
+                \Log::error('Error calling Flask API: ' . $e->getMessage());
             }
-        } catch (\Exception $e) {
-            \Log::error('Error calling Flask API: ' . $e->getMessage());
-            // Optionally, you can set default summaries or handle the error as needed
+
+            // Store the summary in the session for later reuse
+            $summarizedPosts[$post_id] = $summaries;
+            session()->put('summarized_posts', $summarizedPosts);
         }
 
         // Calculate reading time
@@ -232,6 +242,7 @@ class SiteController extends BaseController
 
         return view(parent::loadDefaultDataToView($this->view_path . '.single-post'), compact('data'));
     }
+
     public function category(Request $request, $name)
     {
         $category = Category::where('name', $name)->firstOrFail();

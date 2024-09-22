@@ -37,23 +37,24 @@
                 </tfoot>
                 <tbody>
                     @if(isset($data['row']) && count($data['row']) != 0)
-                    @foreach($data['row'] as $key => $post)
-                    <tr>
-                        <td>{{ $key+1 }}</td>
-                        <td>{{ $post->title }}</td>
-                        <td>{{ $post->comments_count }}</td>
-                        <td>
-                            <span class="btn btn-sm btn-outline-success">Positive: {{ $post->positive_count }}</span>
-                            <span class="btn btn-sm btn-outline-danger">Negative: {{ $post->negative_count }}</span>
-                            <span class="btn btn-sm btn-outline-secondary">Neutral: {{ $post->neutral_count }}</span>
-                        </td>
-                        <td><a href="{{ route('admin.comment.view', ['id' => $post->id]) }}" class="btn-circle btn-primary m-1"><i class="fa fa-eye" aria-hidden="true"></i></a></td>
-                    </tr>
-                    @endforeach
+                        @foreach($data['row'] as $key => $post)
+                            <tr>
+                                <td>{{ $key + 1 }}</td>
+                                <td>{{ $post->title }}</td>
+                                <td>{{ $post->comments_count }}</td>
+                                <td>
+                                    <span class="btn btn-sm btn-outline-success">Positive: {{ $post->positive_count }}</span>
+                                    <span class="btn btn-sm btn-outline-danger">Negative: {{ $post->negative_count }}</span>
+                                    <span class="btn btn-sm btn-outline-secondary">Neutral: {{ $post->neutral_count }}</span>
+                                </td>
+                                <td><a href="{{ route('admin.comment.view', ['id' => $post->id]) }}"
+                                        class="btn-circle btn-primary m-1"><i class="fa fa-eye" aria-hidden="true"></i></a></td>
+                            </tr>
+                        @endforeach
                     @else
-                    <tr>
-                        <td colspan="4">No records found.</td>
-                    </tr>
+                        <tr>
+                            <td colspan="4">No records found.</td>
+                        </tr>
                     @endif
                 </tbody>
 
