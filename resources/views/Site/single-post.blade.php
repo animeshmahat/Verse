@@ -143,9 +143,9 @@
                                                 <div class="reply d-flex mb-4">
                                                     <div class="flex-shrink-0">
                                                         <div class="avatar avatar-sm rounded-circle">
-                                                            @if($comment->user->image)
+                                                            @if($reply->user->image)
                                                                 <img class="avatar-img"
-                                                                    src="{{asset('uploads/user_image/' . $comment->user->image) }}" alt=""
+                                                                    src="{{asset('uploads/user_image/' . $reply->user->image) }}" alt=""
                                                                     class="img-fluid">
                                                             @else
                                                                 <img class="avatar-img" src="{{ asset('assets/Site/usericon.png') }}" alt=""

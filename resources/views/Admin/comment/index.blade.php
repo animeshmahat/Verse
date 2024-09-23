@@ -3,6 +3,15 @@
 @section('title', 'Comment')
 
 @section('css')
+<style>
+    #thumbnail {
+        width: 80px;
+        height: 50px;
+        object-fit: contain;
+        border: 1px solid #c1c1c1;
+        border-radius: 5px;
+    }
+</style>
 @endsection
 
 @section('content')
@@ -16,20 +25,20 @@
     </div>
     <div class="card-body">
         <div class="table-responsive">
-            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                <thead>
+            <table class="table table-striped" id="dataTable" width="100%" cellspacing="0">
+                <thead class="text-center">
                     <tr>
                         <th>S.N.</th>
-                        <th>Post Title</th>
+                        <th>Post</th>
                         <th>Comments Count</th>
                         <th>Sentiment Count</th>
                         <th>Action</th>
                     </tr>
                 </thead>
-                <tfoot>
+                <tfoot class="text-center">
                     <tr>
                         <th>S.N.</th>
-                        <th>Post Title</th>
+                        <th>Post</th>
                         <th>Comments Count</th>
                         <th>Sentiment Count</th>
                         <th>Action</th>
@@ -39,16 +48,29 @@
                     @if(isset($data['row']) && count($data['row']) != 0)
                         @foreach($data['row'] as $key => $post)
                             <tr>
-                                <td>{{ $key + 1 }}</td>
-                                <td>{{ $post->title }}</td>
-                                <td>{{ $post->comments_count }}</td>
-                                <td>
-                                    <span class="btn btn-sm btn-outline-success">Positive: {{ $post->positive_count }}</span>
-                                    <span class="btn btn-sm btn-outline-danger">Negative: {{ $post->negative_count }}</span>
-                                    <span class="btn btn-sm btn-outline-secondary">Neutral: {{ $post->neutral_count }}</span>
+                                <td class="text-center">{{ $key + 1 }}</td>
+                                <td class="my-auto">
+                                    <div class="d-flex flex-row p-2">
+                                        <span class="mx-2"> <img src="{{ asset('/uploads/post/' . $post->thumbnail) }}"
+                                                alt="{{ $post->title }}" id="thumbnail">
+                                        </span>
+                                        <span><strong>{{ $post->title }}</strong><br>({{$post->user->name}})</span>
+                                    </div>
                                 </td>
-                                <td><a href="{{ route('admin.comment.view', ['id' => $post->id]) }}"
-                                        class="btn-circle btn-primary m-1"><i class="fa fa-eye" aria-hidden="true"></i></a></td>
+                                <td class="text-center">{{ $post->comments_count }}</td>
+                                <td class="text-center">
+                                    <div class="d-flex flex-column">
+                                        <span class="btn btn-sm btn-outline-success mt-2 disabled">Positive:
+                                            {{ $post->positive_count }}</span>
+                                        <span class="btn btn-sm btn-outline-danger mt-2 disabled">Negative:
+                                            {{ $post->negative_count }}</span>
+                                        <span class="btn btn-sm btn-outline-secondary mt-2 disabled">Neutral:
+                                            {{ $post->neutral_count }}</span>
+                                    </div>
+                                </td>
+                                <td class="text-center"><a href="{{ route('admin.comment.view', ['id' => $post->id]) }}"
+                                        class="btn-circle btn-outline-dark m-1"><i class="fa fa-eye" aria-hidden="true"></i></a>
+                                </td>
                             </tr>
                         @endforeach
                     @else

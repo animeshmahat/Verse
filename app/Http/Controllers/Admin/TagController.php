@@ -27,21 +27,25 @@ class TagController extends Controller
 
     public function store(Request $request)
     {
-        $validator = $this->model->getRules($request->all());
-
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()->all()], 422);
-        }
-
         $tags = explode(',', $request->name);
+        $existingTags = Tags::whereIn('name', $tags)->pluck('name')->toArray();
+
+        $newTags = [];
         foreach ($tags as $tag) {
-            $model = new Tags;
-            $model->name = trim($tag);
-            $model->save();
+            $tag = trim($tag);
+            if (!in_array($tag, $existingTags)) {
+                $newTags[] = ['name' => $tag];
+            }
         }
 
-        return response()->json(['success' => 'Tags successfully added.']);
+        if (!empty($newTags)) {
+            Tags::insert($newTags);
+            return response()->json(['success' => 'Tags successfully added.']);
+        }
+
+        return response()->json(['error' => 'Some or all tags already exist.'], 422);
     }
+
 
     public function update(Request $request, $id)
     {

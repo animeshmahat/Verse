@@ -73,7 +73,6 @@ class SiteController extends BaseController
         $data = [
             'allPosts' => $allPosts,
             'followingPosts' => $followingPosts,
-            'categoriesWithMostPosts' => $categoriesWithMostPosts,
             'tagsWithMostPosts' => $tagsWithMostPosts,
             'popularPosts' => $popularPosts,
             'trendingPosts' => $trendingPosts,
@@ -125,7 +124,6 @@ class SiteController extends BaseController
         $trendingPosts = $this->postService->getTrendingPosts();
 
         $data = [
-            'categoriesWithMostPosts' => $categoriesWithMostPosts,
             'tagsWithMostPosts' => $tagsWithMostPosts,
             'popularPosts' => $popularPosts,
             'trendingPosts' => $trendingPosts,
@@ -196,14 +194,6 @@ class SiteController extends BaseController
         $comments = Comments::where('post_id', $post_id)->get();
 
         // Sidebar info 
-        $categories = Category::get();
-        $categoriesWithMostPosts = Category::withCount([
-            'posts' => function ($query) {
-                $query->where('status', 1)->whereHas('user', function ($query) {
-                    $query->where('status', 1); // Ensure user status is 1
-                });
-            }
-        ])->orderBy('posts_count', 'DESC')->get();
         $tagsWithMostPosts = Tags::withCount([
             'posts' => function ($query) {
                 $query->where('status', 1)->whereHas('user', function ($query) {
@@ -264,7 +254,6 @@ class SiteController extends BaseController
             'post' => $post,
             'post_id' => $post_id,
             'comments' => $comments,
-            'categoriesWithMostPosts' => $categoriesWithMostPosts,
             'tagsWithMostPosts' => $tagsWithMostPosts,
             'popularPosts' => $popularPosts,
             'trendingPosts' => $trendingPosts,
@@ -286,14 +275,6 @@ class SiteController extends BaseController
         Paginator::useBootstrap();
 
         // Sidebar info 
-        $categories = Category::get();
-        $categoriesWithMostPosts = Category::withCount([
-            'posts' => function ($query) {
-                $query->where('status', 1)->whereHas('user', function ($query) {
-                    $query->where('status', 1); // Ensure user status is 1
-                });
-            }
-        ])->orderBy('posts_count', 'DESC')->get();
         $tagsWithMostPosts = Tags::withCount([
             'posts' => function ($query) {
                 $query->where('status', 1)->whereHas('user', function ($query) {
@@ -310,7 +291,6 @@ class SiteController extends BaseController
             'category' => $category,
             'category_id' => $category_id,
             'post' => $post,
-            'categoriesWithMostPosts' => $categoriesWithMostPosts,
             'tagsWithMostPosts' => $tagsWithMostPosts,
             'popularPosts' => $popularPosts,
             'trendingPosts' => $trendingPosts,

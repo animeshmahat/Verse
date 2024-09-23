@@ -3,12 +3,11 @@
     <div class="container-fluid container-xl d-flex align-items-center justify-content-between">
 
         <a href="{{ route('site.index') }}" class="logo d-flex align-items-center">
-            <img src="{{ asset($all_view['setting']->logo) }}" alt="">
+            <img src="{{ asset($all_view['setting']->logo) }}" alt="{{$all_view['setting']->site_name}}">
         </a>
 
         <nav id="navbar" class="navbar">
             <ul>
-                <li><a href="#">Latest</a></li>
                 <li class="dropdown"><a href="#"><span>Categories</span> <i
                             class="bi bi-chevron-down dropdown-indicator"></i></a>
                     <ul>
@@ -72,7 +71,7 @@
                             document.addEventListener('DOMContentLoaded', function () {
                                 let navbarDropdown = document.getElementById('navbarDropdown');
                                 let hasUnreadNotifications = {
-                                {
+                                                                {
                                     Auth:: user() - > unreadNotificationsCount()
                                 }
                             } > 0;
@@ -93,7 +92,7 @@
                                     console.log(data.message);
                                 });
                             });
-                        });
+                                                        });
                         </script>
                 @endguest
             </ul>
@@ -110,7 +109,7 @@
             <a href="{{ route('site.search') }}" class="mx-2 js-search-open"><span class="bi-search"></span></a>
             <i class="bi bi-list mobile-nav-toggle"></i>
 
-            <!-- ======= Search Form ======= -->
+            <!-- ======= Search bar ======= -->
             <div class="search-form-wrap js-search-form-wrap">
                 <form action="{{ route('site.search') }}" class="search-form" method="GET">
                     <span class="icon bi-search"></span>
@@ -165,7 +164,6 @@
                         });
                     });
                 </script>
-
                 <style>
                     #suggestions {
                         border: 1px solid #ccc;
@@ -192,7 +190,7 @@
                     }
                 </style>
             </div>
-            <!-- End Search Form -->
+            <!-- End Search Bar -->
         </div>
     </div>
 </header><!-- End Header -->
