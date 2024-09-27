@@ -1,4 +1,4 @@
-<!-- ======= Header ======= -->
+<!-- Header  -->
 <header id="header" class="header d-flex align-items-center fixed-top">
     <div class="container-fluid container-xl d-flex align-items-center justify-content-between">
 
@@ -31,6 +31,7 @@
                             <ul>
                                 @if(Auth::user()->role == 'superadmin')
                                     <li><a href="{{ route('admin.index') }}">Dashboard</a></li>
+                                    <li><a href="{{ route('site.profile', ['id' => Auth::user()->id]) }}">Profile</a></li>
                                 @else
                                     <li><a href="{{ route('site.profile', ['id' => Auth::user()->id]) }}">Profile</a></li>
                                 @endif
@@ -71,7 +72,7 @@
                             document.addEventListener('DOMContentLoaded', function () {
                                 let navbarDropdown = document.getElementById('navbarDropdown');
                                 let hasUnreadNotifications = {
-                                                                {
+                                                                                                {
                                     Auth:: user() - > unreadNotificationsCount()
                                 }
                             } > 0;
@@ -92,7 +93,7 @@
                                     console.log(data.message);
                                 });
                             });
-                                                        });
+                                                                                        });
                         </script>
                 @endguest
             </ul>

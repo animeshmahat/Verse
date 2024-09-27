@@ -34,13 +34,13 @@
     }
 
     .modal-body {
-        max-height: 400px;
+        max-height: 450px;
         overflow-y: auto;
         /* Enables vertical scrolling */
     }
 
     .modal-dialog {
-        max-width: 500px;
+        max-width: 700px;
         margin: 30px auto;
         /* Centers the modal with spacing from the top */
     }
@@ -245,10 +245,10 @@
             <div class="modal-body">
                 <!-- Tab links -->
                 <div class="tab">
-                    <button class="tablinks" onclick="openSummary(event, 'BulletPoints')" id="defaultOpen"><i
-                            class="fa-solid fa-list"></i> Points</button>
-                    <button class="tablinks" onclick="openSummary(event, 'Paragraph')"><i
+                    <button class="tablinks" onclick="openSummary(event, 'Paragraph')" id="defaultOpen"><i
                             class="fa-solid fa-paragraph"></i> Paragraph</button>
+                    <button class="tablinks" onclick="openSummary(event, 'BulletPoints')"><i
+                            class="fa-solid fa-list"></i> Points</button>
                 </div>
 
                 <!-- Tab content -->
