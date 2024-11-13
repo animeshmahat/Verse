@@ -6,6 +6,11 @@
     .nav-link {
         color: black;
     }
+
+    .author_name:hover,
+    h3:hover {
+        text-shadow: 0 0 3px yellow, 0 0 5px #fff;
+    }
 </style>
 @endsection
 @section('content')
@@ -54,7 +59,8 @@
                                                 <div class="photo"><img src="{{asset('/assets/Site/usericon.jpg')}}" alt=""
                                                         class="img-fluid"></div>
                                             @endif <div class="name">
-                                                <h3 class="m-0 p-0">{{$row->user->name}}</h3>
+                                                <a class="author_name"
+                                                    href="{{route('site.profile', $row->user->id)}}">{{$row->user->name}}</a>
                                             </div>
                                         </div>
                                     </div>
@@ -97,7 +103,7 @@
                                                 <div class="photo"><img src="{{asset('/assets/Site/usericon.jpg')}}" alt=""
                                                         class="img-fluid"></div>
                                             @endif <div class="name">
-                                                <h3 class="m-0 p-0">{{$row->user->name}}</h3>
+                                                <a class="author_name">{{$row->user->name}}</a>
                                             </div>
                                         </div>
                                     </div>
