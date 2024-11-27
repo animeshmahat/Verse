@@ -13,7 +13,7 @@
                     <ul>
                         @if(isset($all_view['category']) && $all_view['category']->isNotEmpty())
                             @foreach($all_view['category'] as $category)
-                                @if($loop->index < 7)
+                                @if($loop->index < 5)
                                     <li><a href="{{ route('site.category', $category->name) }}">{{ $category->name }}</a>
                                     </li>
                                 @endif
@@ -56,14 +56,16 @@
                                     <li class="dropdown-item">No notifications</li>
                                 @else
                                                 @foreach(Auth::user()->notifications as $notification)
-                                                                <li class="dropdown-item {{ $notification->read ? '' : 'font-weight-bold' }}">
-                                                                    @php
-                                                                        $notificationData = json_decode($notification->data);
-                                                                    @endphp
-                                                                    {{ $notificationData->message }}
-                                                                    <br>
-                                                                    <small class="text-muted">{{ $notification->created_at->diffForHumans() }}</small>
-                                                                </li>
+                                                                @php
+                                                                    $notificationData = json_decode($notification->data);
+                                                                @endphp
+                                                                @if(!str_contains($notificationData->message, Auth::user()->name))
+                                                                    <li class="dropdown-item {{ $notification->read ? '' : 'font-weight-bold' }}">
+                                                                        {{ Str::limit($notificationData->message, 50) }}
+                                                                        <br>
+                                                                        <small class="text-muted">{{ $notification->created_at->diffForHumans() }}</small>
+                                                                    </li>
+                                                                @endif
                                                 @endforeach
                                 @endif
                             </ul>
@@ -72,7 +74,7 @@
                             document.addEventListener('DOMContentLoaded', function () {
                                 let navbarDropdown = document.getElementById('navbarDropdown');
                                 let hasUnreadNotifications = {
-                                                                                                {
+                                                                                                                                                                                                                                {
                                     Auth:: user() - > unreadNotificationsCount()
                                 }
                             } > 0;
@@ -93,7 +95,7 @@
                                     console.log(data.message);
                                 });
                             });
-                                                                                        });
+                                                                                                                                                                                                                        });
                         </script>
                 @endguest
             </ul>

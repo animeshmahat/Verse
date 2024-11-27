@@ -38,7 +38,7 @@ class SiteController extends BaseController
                 $query->where('status', 1); // Ensure user status is 1
             })
             ->orderBy('created_at', 'DESC')
-            ->paginate(10);
+            ->paginate(5);
 
         $followingPosts = collect();
         if ($user) {
@@ -49,21 +49,7 @@ class SiteController extends BaseController
         Paginator::useBootstrap();
 
         // Sidebar info
-        $categoriesWithMostPosts = Category::withCount([
-            'posts' => function ($query) {
-                $query->where('status', 1)->whereHas('user', function ($query) {
-                    $query->where('status', 1); // Ensure user status is 1
-                });
-            }
-        ])->orderBy('posts_count', 'DESC')->get();
-
-        $tagsWithMostPosts = Tags::withCount([
-            'posts' => function ($query) {
-                $query->where('status', 1)->whereHas('user', function ($query) {
-                    $query->where('status', 1); // Ensure user status is 1
-                });
-            }
-        ])->orderBy('posts_count', 'DESC')->get();
+        $categories = Category::get();
 
         $popularPosts = Posts::orderBy('views', 'DESC')->whereHas('user', function ($query) {
             $query->where('status', 1); // Ensure user status is 1
@@ -73,7 +59,7 @@ class SiteController extends BaseController
         $data = [
             'allPosts' => $allPosts,
             'followingPosts' => $followingPosts,
-            'tagsWithMostPosts' => $tagsWithMostPosts,
+            'categories' => $categories,
             'popularPosts' => $popularPosts,
             'trendingPosts' => $trendingPosts,
         ];
@@ -124,7 +110,7 @@ class SiteController extends BaseController
         $trendingPosts = $this->postService->getTrendingPosts();
 
         $data = [
-            'tagsWithMostPosts' => $tagsWithMostPosts,
+            'categories' => $categories,
             'popularPosts' => $popularPosts,
             'trendingPosts' => $trendingPosts,
         ];
@@ -155,6 +141,7 @@ class SiteController extends BaseController
         // Get viewed posts and summaries data from the session
         $viewedPosts = session()->get('viewed_posts', []);
         $summarizedPosts = session()->get('summarized_posts', []);
+        $cachedSentiments = session()->get('sentiment_data', []);
 
         // Check if the post has been viewed in the session
         if (isset($viewedPosts[$post_id])) {
@@ -164,28 +151,20 @@ class SiteController extends BaseController
 
             // Check the time interval and view count
             if ($viewCount < 5 && now()->diffInSeconds($lastViewed) >= 30) {
-                // Increment the views count
                 $post->increment('views');
-
-                // Update the view data
                 $viewedPosts[$post_id]['last_viewed'] = now();
                 $viewedPosts[$post_id]['count']++;
             }
         } else {
-            // Increment the views count for the first view in the session
             $post->increment('views');
-
-            // Initialize the view data for this post
             $viewedPosts[$post_id] = [
                 'last_viewed' => now(),
                 'count' => 1,
             ];
         }
-
-        // Store the updated viewed posts data in the session
         session()->put('viewed_posts', $viewedPosts);
 
-        // Store the datetime of the view
+        // Log the view in the database
         PostView::create([
             'post_id' => $post_id,
             'viewed_at' => now(),
@@ -193,43 +172,67 @@ class SiteController extends BaseController
 
         $comments = Comments::where('post_id', $post_id)->get();
 
-        // Sidebar info 
-        $tagsWithMostPosts = Tags::withCount([
-            'posts' => function ($query) {
-                $query->where('status', 1)->whereHas('user', function ($query) {
-                    $query->where('status', 1); // Ensure user status is 1
-                });
+        // Sentiment Analysis
+        $positiveCount = 0;
+        $negativeCount = 0;
+        $neutralCount = 0;
+        $client = new Client();
+
+        foreach ($comments as $comment) {
+            $commentId = $comment->id;
+
+            // Check if sentiment for this comment is cached
+            if (isset($cachedSentiments[$post_id][$commentId])) {
+                $sentiment = $cachedSentiments[$post_id][$commentId];
+            } else {
+                try {
+                    // Send the comment text to the Flask API
+                    $response = $client->post('http://127.0.0.1:5000/predict', [
+                        'json' => ['text' => $comment->comment]
+                    ]);
+                    $result = json_decode($response->getBody(), true);
+                    $sentiment = $result['sentiment'] ?? 'unknown'; // 'positive', 'negative', or 'neutral'
+
+                    // Cache the sentiment result in the session
+                    $cachedSentiments[$post_id][$commentId] = $sentiment;
+                } catch (\Exception $e) {
+                    $sentiment = 'unknown';
+                }
             }
-        ])->orderBy('posts_count', 'DESC')->get();
+
+            // Count sentiments
+            if ($sentiment === 'positive') {
+                $positiveCount++;
+            } elseif ($sentiment === 'negative') {
+                $negativeCount++;
+            } elseif ($sentiment === 'neutral') {
+                $neutralCount++;
+            }
+        }
+
+        session()->put('sentiment_data', $cachedSentiments);
+
+        // Sidebar and other existing functionality
+        $categories = Category::get();
         $popularPosts = Posts::orderBy('views', 'DESC')->whereHas('user', function ($query) {
-            $query->where('status', 1); // Ensure user status is 1
+            $query->where('status', 1);
         })->take(7)->get();
         $trendingPosts = $this->postService->getTrendingPosts();
 
-        // Summary
+        // Summarization
         $summaries = [];
         if (isset($summarizedPosts[$post_id])) {
-            // Retrieve cached summary from session
             $summaries = $summarizedPosts[$post_id];
         } else {
-            // Default summary from TextRankService
             $summaries = $this->textRankService->summarizeText($post->title, $post->description);
-
-            // Try calling Flask API for summarization
             try {
-                $apiUrl = "http://localhost:5000/summarize"; // Flask API URL
-                $client = new Client([
-                    'timeout' => 500, // seconds
-                    'verify' => false, // Disable SSL verification if necessary
-                ]);
-
+                $apiUrl = "http://localhost:5000/summarize";
                 $response = $client->post($apiUrl, [
                     'json' => [
                         'title' => $post->title,
                         'description' => $post->description
                     ]
                 ]);
-
                 if ($response->getStatusCode() == 200) {
                     $apiSummary = json_decode($response->getBody(), true);
                     if (isset($apiSummary['paragraph']) && isset($apiSummary['bullet_points'])) {
@@ -240,26 +243,26 @@ class SiteController extends BaseController
             } catch (\Exception $e) {
                 \Log::error('Error calling Flask API: ' . $e->getMessage());
             }
-
-            // Store the summary in the session for later reuse
             $summarizedPosts[$post_id] = $summaries;
             session()->put('summarized_posts', $summarizedPosts);
         }
 
-        // Calculate reading time
         $wordCount = str_word_count(strip_tags($post->description));
-        $readingTime = ceil($wordCount / 200); // Assuming 200 words per minute
+        $readingTime = ceil($wordCount / 200);
 
         $data = [
             'post' => $post,
             'post_id' => $post_id,
             'comments' => $comments,
-            'tagsWithMostPosts' => $tagsWithMostPosts,
+            'categories' => $categories,
             'popularPosts' => $popularPosts,
             'trendingPosts' => $trendingPosts,
             'paragraph_summary' => $summaries['paragraph'] ?? '',
             'bullet_point_summary' => $summaries['bullet_points'] ?? [],
             'readingTime' => $readingTime,
+            'positiveCount' => $positiveCount,
+            'negativeCount' => $negativeCount,
+            'neutralCount' => $neutralCount,
         ];
 
         return view(parent::loadDefaultDataToView($this->view_path . '.single-post'), compact('data'));
@@ -275,13 +278,7 @@ class SiteController extends BaseController
         Paginator::useBootstrap();
 
         // Sidebar info 
-        $tagsWithMostPosts = Tags::withCount([
-            'posts' => function ($query) {
-                $query->where('status', 1)->whereHas('user', function ($query) {
-                    $query->where('status', 1); // Ensure user status is 1
-                });
-            }
-        ])->orderBy('posts_count', 'DESC')->get();
+        $categories = Category::get();
         $popularPosts = Posts::orderBy('views', 'DESC')->whereHas('user', function ($query) {
             $query->where('status', 1); // Ensure user status is 1
         })->take(7)->get();
@@ -291,13 +288,14 @@ class SiteController extends BaseController
             'category' => $category,
             'category_id' => $category_id,
             'post' => $post,
-            'tagsWithMostPosts' => $tagsWithMostPosts,
+            'categories' => $categories,
             'popularPosts' => $popularPosts,
             'trendingPosts' => $trendingPosts,
         ];
 
         return view(parent::loadDefaultDataToView($this->view_path . '.category'), compact('data'));
     }
+
     public function follow($userId)
     {
         $user = User::find($userId);
@@ -341,7 +339,6 @@ class SiteController extends BaseController
 
         return response()->json(['message' => 'Failed to unfollow the user.'], 400);
     }
-
     public function followers($id)
     {
         $user = User::findOrFail($id);
@@ -393,8 +390,17 @@ class SiteController extends BaseController
         }
 
         $like->delete();
-
         $post->decrement('likes_count');
+
+        // Delete the notification
+        $notification = $post->user->notifications()
+            ->where('type', 'like')
+            ->whereJsonContains('data', ['message' => "{$user->name} liked your post."])
+            ->first();
+
+        if ($notification) {
+            $notification->delete();
+        }
 
         return response()->json(['message' => 'Post unliked'], 200);
     }

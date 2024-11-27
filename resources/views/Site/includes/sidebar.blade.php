@@ -59,12 +59,12 @@
     </div>
 
     <div class="aside-block">
-        <h3 class="aside-title">Tags</h3>
+        <h3 class="aside-title">Categories</h3>
         <ul class="aside-tags list-unstyled">
-            @if(isset($data['tagsWithMostPosts']))
-                @foreach($data['tagsWithMostPosts'] as $tags)
+            @if(isset($data['categories']))
+                @foreach($data['categories'] as $category)
                     @if($loop->index < 20)
-                        <li><a href="#">{{$tags->name}}</a></li>
+                        <li><a href="{{ route('site.category', $category->name) }}">{{$category->name}}</a></li>
                     @endif
                 @endforeach
             @endif

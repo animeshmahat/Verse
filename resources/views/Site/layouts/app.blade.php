@@ -78,13 +78,11 @@
     <a href="#" class="scroll-top d-flex align-items-center justify-content-center"><i
             class="bi bi-arrow-up-short"></i></a>
 
-    <!-- Vendor JS Files -->
     <script src="{{asset('assets/Site/vendor/bootstrap/js/bootstrap.bundle.min.js')}}"></script>
     <script src="{{asset('assets/Site/vendor/swiper/swiper-bundle.min.js')}}"></script>
     <script src="{{asset('assets/Site/vendor/glightbox/js/glightbox.min.js')}}"></script>
     <script src="{{asset('assets/Site/vendor/aos/aos.js')}}"></script>
 
-    <!-- Template Main JS File -->
     <script src="{{asset('assets/Site/js/main.js')}}"></script>
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>

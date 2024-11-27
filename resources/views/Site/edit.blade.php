@@ -100,26 +100,43 @@
                         enctype="multipart/form-data">
                         @csrf
                         {{method_field('PUT')}}
-                        <div class="form-group mb-3">
+                        <div class="form-group mb-3 position-relative">
                             <label for="current_password" class="form-label"><strong>Current Password</strong></label>
-                            <input type="password" class="form-control" id="current_password" name="current_password"
-                                value="" placeholder="Enter Your Current Password">
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="current_password"
+                                    name="current_password" placeholder="Enter Your Current Password">
+                                <span class="input-group-text toggle-password" data-target="#current_password">
+                                    <i class="fa fa-eye" aria-hidden="true"></i>
+                                </span>
+                            </div>
                             @error('current_password')
                                 <div class="alert alert-danger" role="alert">{{ $message }}</div>
                             @enderror
                         </div>
-                        <div class="form-group mt-3 mb-3">
+
+                        <div class="form-group mb-3 position-relative">
                             <label for="password" class="form-label"><strong>New Password</strong></label>
-                            <input type="password" class="form-control" id="password" name="password" value=""
-                                placeholder="Enter Your New Password">
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="password" name="password"
+                                    placeholder="Enter Your New Password">
+                                <span class="input-group-text toggle-password" data-target="#password">
+                                    <i class="fa fa-eye" aria-hidden="true"></i>
+                                </span>
+                            </div>
+                            @error('password')
+                                <div class="alert alert-danger" role="alert">{{ $message }}</div>
+                            @enderror
                         </div>
-                        @error('password')
-                            <div class="alert alert-danger" role="alert">{{ $message }}</div>
-                        @enderror
-                        <div class="form-group mt-3 mb-3">
+
+                        <div class="form-group mb-3 position-relative">
                             <label for="confirm_password" class="form-label"><strong>Confirm Password</strong></label>
-                            <input type="password" class="form-control" id="confirm_password"
-                                name="password_confirmation" value="" placeholder="Re-enter Your New Password">
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="confirm_password"
+                                    name="password_confirmation" placeholder="Re-enter Your New Password">
+                                <span class="input-group-text toggle-password" data-target="#confirm_password">
+                                    <i class="fa fa-eye" aria-hidden="true"></i>
+                                </span>
+                            </div>
                         </div>
                         <hr>
                         <div>
@@ -145,5 +162,27 @@
             URL.revokeObjectURL(output.src);
         }
     };
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const togglePasswordButtons = document.querySelectorAll('.toggle-password');
+
+        togglePasswordButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const targetInput = document.querySelector(button.getAttribute('data-target'));
+                const icon = button.querySelector('i');
+
+                if (targetInput.type === 'password') {
+                    targetInput.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    targetInput.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            });
+        });
+    });
 </script>
 @endsection

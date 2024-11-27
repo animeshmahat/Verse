@@ -170,22 +170,25 @@ class CommentController extends BaseController
         $post = Posts::findOrFail($request->post_id);
         $post->increment('comments_count');
 
-        // Create notification with only the date
-        $date = Carbon::now()->format('Y-m-d');
-        $message = Auth::user()->name . " commented on your post ({$post->title}) on {$date}.";
+        // Check if the comment was made by the post owner
+        if ($post->user_id !== Auth::id()) {
+            // Create notification with only the date
+            $date = Carbon::now()->format('Y-m-d');
+            $message = Auth::user()->name . " commented on your post ({$post->title}) on {$date}.";
 
-        // Ensure unique notification
-        $post->user->notifications()->updateOrCreate(
-            [
-                'type' => 'comment',
-                'data' => json_encode(['message' => $message]),
-                'user_id' => $post->user->id
-            ],
-            [
-                'updated_at' => now(),
-                'created_at' => now(),
-            ]
-        );
+            // Ensure unique notification
+            $post->user->notifications()->updateOrCreate(
+                [
+                    'type' => 'comment',
+                    'data' => json_encode(['message' => $message]),
+                    'user_id' => $post->user->id
+                ],
+                [
+                    'updated_at' => now(),
+                    'created_at' => now(),
+                ]
+            );
+        }
 
         return redirect()->back()->with('success', 'Comment successfully added.');
     }
@@ -198,6 +201,12 @@ class CommentController extends BaseController
         if ($comment->user_id != Auth::id()) {
             return redirect()->back()->with('error', 'You are not authorized to delete this comment.');
         }
+
+        // Remove associated notification if it exists
+        $message = Auth::user()->name . " commented on your post ({$post->title}) on " . $comment->created_at->format('Y-m-d');
+        $post->user->notifications()->where('type', 'comment')
+            ->where('data', 'like', '%' . $message . '%')
+            ->delete();
 
         // Delete the comment
         $comment->delete();

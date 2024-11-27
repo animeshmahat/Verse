@@ -34,7 +34,7 @@
     }
 
     .modal-body {
-        max-height: 450px;
+        max-height: 400px;
         overflow-y: auto;
         /* Enables vertical scrolling */
     }
@@ -43,6 +43,16 @@
         max-width: 700px;
         margin: 30px auto;
         /* Centers the modal with spacing from the top */
+    }
+
+    .blurred {
+        filter: blur(5px);
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .blurred:hover {
+        filter: blur(3px);
     }
 </style>
 @endsection
@@ -57,7 +67,9 @@
                         <span class="date">{{ $data['post']->category->name }}</span>
                         <span class="mx-1">&bullet;</span>
                         <span>{{ $data['post']->created_at->format('Y-m-d D') }}</span>
-                        <span><i>({{ $data['readingTime'] }} minute read)</i></span>
+                        <span><i>({{ $data['readingTime'] }} minute read)</i>
+                            <em>({{ str_word_count(strip_tags($data['post']->description ?? '')) }} words)</em>
+                        </span>
                     </div>
                     <div class="post-meta">
                         <i class="fa fa-eye"></i>
@@ -110,6 +122,14 @@
                     <h5 class="comment-title py-4">{{$data['post']->likes_count}} Likes &amp;
                         {{ $data['post']->comments_count }} Comments
                     </h5>
+
+                    @if(auth()->id() === $data['post']->user_id)
+                        <div class="sentiment-counts mb-3">
+                            <span class="badge bg-success">Positive: {{ $data['positiveCount'] }}</span>
+                            <span class="badge bg-danger">Negative: {{ $data['negativeCount'] }}</span>
+                            <span class="badge bg-secondary">Neutral: {{ $data['neutralCount'] }}</span>
+                        </div>
+                    @endif
                     <!-- Comment Display Section -->
                     @foreach($data['comments'] as $comment)
                         @if(!$comment->parent_id)
@@ -129,11 +149,15 @@
                                     <div class="comment-meta d-flex align-items-baseline">
                                         <h6 class="me-2">{{ $comment->user->name }}</h6>
                                         <span class="text-muted">{{ $comment->created_at->diffForHumans() }}</span>
+                                        <!-- Display negative badge if sentiment is negative -->
+                                        @if(session('sentiment_data')[$data['post_id']][$comment->id] === 'negative')
+                                            <span class="badge bg-danger ms-2">Potential Negative</span>
+                                        @endif
                                     </div>
-                                    <div class="comment-body">
+                                    <div class="comment-body @if(session('sentiment_data')[$data['post_id']][$comment->id] === 'negative') blurred negative-comment @endif"
+                                        data-toggle="blur">
                                         {{ $comment->comment }}
                                     </div>
-
                                     @if($comment->replies->count() > 0)
                                         <div class="comment-replies bg-light p-3 mt-3 rounded">
                                             <h6 class="comment-replies-title mb-4 text-muted text-uppercase">
@@ -156,11 +180,17 @@
                                                     <div class="flex-grow-1 ms-2 ms-sm-3">
                                                         <div class="reply-meta d-flex align-items-baseline">
                                                             <h6 class="mb-0 me-2">{{ $reply->user->name }}</h6>
-                                                            <span class="text-muted">{{ $reply->created_at->diffForHumans() }}</span>
+                                                            <span class="text-muted">{{ $comment->created_at->diffForHumans() }}</span>
+                                                            <!-- Display negative badge if sentiment is negative -->
+                                                            @if(session('sentiment_data')[$data['post_id']][$comment->id] === 'negative')
+                                                                <span class="badge bg-danger ms-2">Potential Negative</span>
+                                                            @endif
                                                         </div>
-                                                        <div class="reply-body">
+                                                        <div class="reply-body @if(session('sentiment_data')[$data['post_id']][$reply->id] === 'negative')  blurred negative-comment @endif"
+                                                            data-toggle="blur">
                                                             {{ $reply->comment }}
                                                         </div>
+
                                                     </div>
                                                 </div>
                                             @endforeach
@@ -175,7 +205,7 @@
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="button"
-                                                    class="btn btn-outline-danger btn-rounded-circle btn-sm delete-comment-btn"><i
+                                                    class="btn btn-outline-danger btn-rounded-circle btn-sm delete-comment-btn mx-2"><i
                                                         class="fa-solid fa-trash"></i> Delete</button>
                                             </form>
                                         @endif
@@ -202,7 +232,6 @@
                         @endif
                     @endforeach
                 </div>
-
                 @auth
                     <div class="row justify-content-center mt-5">
                         <div class="col-lg-12">
@@ -240,15 +269,17 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="summarizeModalLabel">Summary</h5>
+                <h5 class="modal-title" id="summarizeModalLabel">Summary
+                    <em>({{ str_word_count(strip_tags($data['paragraph_summary'] ?? '')) }} words)</em>
+                </h5>
             </div>
             <div class="modal-body">
                 <!-- Tab links -->
                 <div class="tab">
-                    <button class="tablinks" onclick="openSummary(event, 'Paragraph')" id="defaultOpen"><i
-                            class="fa-solid fa-paragraph"></i> Paragraph</button>
-                    <button class="tablinks" onclick="openSummary(event, 'BulletPoints')"><i
+                    <button class="tablinks" onclick="openSummary(event, 'BulletPoints')" id="defaultOpen"><i
                             class="fa-solid fa-list"></i> Points</button>
+                    <button class="tablinks" onclick="openSummary(event, 'Paragraph')"><i
+                            class="fa-solid fa-paragraph"></i> Paragraph</button>
                 </div>
 
                 <!-- Tab content -->
@@ -359,5 +390,35 @@
         document.getElementById(summaryType).style.display = "block";
         evt.currentTarget.className += " active";
     }
+</script>
+<script>
+    if ('scrollRestoration' in history) {
+        history.scrollRestoration = 'manual';
+    }
+
+    // Store the current scroll position before the page unloads
+    window.addEventListener('beforeunload', function () {
+        localStorage.setItem('scrollPosition', window.scrollY);
+    });
+
+    // Restore the scroll position when the page loads
+    window.addEventListener('load', function () {
+        const scrollPosition = localStorage.getItem('scrollPosition');
+        if (scrollPosition) {
+            window.scrollTo(0, parseInt(scrollPosition, 10));
+            localStorage.removeItem('scrollPosition'); // Clean up after restoring
+        }
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const negativeComments = document.querySelectorAll('.negative-comment');
+
+        negativeComments.forEach(comment => {
+            comment.addEventListener('click', () => {
+                comment.classList.toggle('blurred');
+            });
+        });
+    });
 </script>
 @endsection
