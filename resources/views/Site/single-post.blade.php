@@ -67,7 +67,7 @@
                         <span class="date">{{ $data['post']->category->name }}</span>
                         <span class="mx-1">&bullet;</span>
                         <span>{{ $data['post']->created_at->format('Y-m-d D') }}</span>
-                        <span><i>({{ $data['readingTime'] }} minute read)</i>
+                        <span>
                             <em>({{ str_word_count(strip_tags($data['post']->description ?? '')) }} words)</em>
                         </span>
                     </div>
